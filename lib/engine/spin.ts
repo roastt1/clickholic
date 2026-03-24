@@ -33,6 +33,7 @@ export function executeSpin(
   return {
     symbols,
     score: breakdown.total,
+    // score_multiply / score_add만 포함 (symbol_transform 등은 GameState에서 별도 처리)
     bonuses: effects.filter(
       (e) => e.type === 'score_multiply' || e.type === 'score_add',
     ),
