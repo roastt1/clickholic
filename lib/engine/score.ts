@@ -46,16 +46,19 @@ export function calculateScore(
   const groupBonus = calculateGroupBonus(grid)
   const subtotal = base + groupBonus
 
-  let effectBonus = 0
-  let multipliedTotal = subtotal
-
-  for (const effect of effects) {
-    if (effect.type === 'score_multiply') {
-      multipliedTotal = multipliedTotal * effect.value
-    } else if (effect.type === 'score_add') {
-      effectBonus += effect.value
-    }
-  }
+  // score_multiply는 순차 곱셈 적용 (2×후 3× = 6×), score_add는 곱셈 후 합산
+  const { multipliedTotal, effectBonus } = effects.reduce(
+    (acc, effect) => {
+      if (effect.type === 'score_multiply') {
+        return { ...acc, multipliedTotal: acc.multipliedTotal * effect.value }
+      }
+      if (effect.type === 'score_add') {
+        return { ...acc, effectBonus: acc.effectBonus + effect.value }
+      }
+      return acc
+    },
+    { multipliedTotal: subtotal, effectBonus: 0 },
+  )
 
   const total = Math.floor(multipliedTotal + effectBonus)
 

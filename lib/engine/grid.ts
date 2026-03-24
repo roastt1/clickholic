@@ -12,19 +12,19 @@ export interface ConnectedGroup {
 /**
  * 상하좌우 인접한 심볼 반환 (경계 자동 처리)
  */
+const DIRECTIONS: Array<[number, number]> = [
+  [-1, 0], // 위
+  [1, 0],  // 아래
+  [0, -1], // 왼쪽
+  [0, 1],  // 오른쪽
+]
+
 export function getAdjacentSymbols(
   grid: SlotSymbol[][],
   row: number,
   col: number,
 ): SlotSymbol[] {
-  const directions: Array<[number, number]> = [
-    [-1, 0], // 위
-    [1, 0],  // 아래
-    [0, -1], // 왼쪽
-    [0, 1],  // 오른쪽
-  ]
-
-  return directions
+  return DIRECTIONS
     .map(([dr, dc]) => grid[row + dr]?.[col + dc])
     .filter((s): s is SlotSymbol => s !== undefined)
 }
@@ -64,13 +64,13 @@ function bfs(
   const positions: Array<[number, number]> = []
   visited[startRow][startCol] = true
 
-  const directions: Array<[number, number]> = [[-1, 0], [1, 0], [0, -1], [0, 1]]
-
   while (queue.length > 0) {
-    const [row, col] = queue.shift()!
+    const next = queue.shift()
+    if (!next) break
+    const [row, col] = next
     positions.push([row, col])
 
-    for (const [dr, dc] of directions) {
+    for (const [dr, dc] of DIRECTIONS) {
       const nr = row + dr
       const nc = col + dc
 
