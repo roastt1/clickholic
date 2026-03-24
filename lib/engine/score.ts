@@ -1,6 +1,6 @@
 import type { SlotSymbol } from '@/types/symbol'
 import type { Effect } from '@/types/effect'
-import { findConnectedGroups } from './grid'
+import { findLines, detectVShapes, isFullHouse } from './grid'
 
 export interface ScoreBreakdown {
   groupScore: number  // 연결 그룹 점수 합 (음수 가능)
@@ -8,27 +8,47 @@ export interface ScoreBreakdown {
   total: number
 }
 
-// 연결 개수별 배율 (3→×1, 4→×2, 5+→×4)
-const GROUP_SIZE_MULTIPLIERS: Record<number, number> = {
-  3: 1,
-  4: 2,
+// 직선 길이별 배율 (3→×1, 4→×2, 5→×3)
+function getLineMultiplier(size: number): number {
+  if (size >= 5) return 3
+  if (size === 4) return 2
+  return 1 // 3개
 }
-const GROUP_SIZE_MULTIPLIER_MAX = 4 // 5개 이상
 
-function getSizeMultiplier(size: number): number {
-  return GROUP_SIZE_MULTIPLIERS[size] ?? GROUP_SIZE_MULTIPLIER_MAX
+function sumGroupValues(
+  grid: SlotSymbol[][],
+  positions: Array<[number, number]>,
+): number {
+  return positions.reduce((sum, [r, c]) => sum + grid[r][c].groupValue, 0)
 }
 
 export function calculateGroupScore(grid: SlotSymbol[][]): number {
-  const groups = findConnectedGroups(grid)
+  // 풀 하우스: 15개 전체 동일 → ×10
+  if (isFullHouse(grid)) {
+    return grid.flat().reduce((sum, s) => sum + s.groupValue, 0) * 10
+  }
 
-  return groups.reduce((total, group) => {
-    const groupValueSum = group.positions.reduce(
-      (sum, [row, col]) => sum + grid[row][col].groupValue,
-      0,
-    )
-    return total + groupValueSum * getSizeMultiplier(group.size)
-  }, 0)
+  // V자/역V자 탐지 → 해당 셀을 직선 탐지에서 제외해 중복 계산 방지
+  const vShapes = detectVShapes(grid)
+  const vShapeCells = new Set(
+    vShapes.flatMap((v) => v.positions.map(([r, c]) => `${r},${c}`)),
+  )
+
+  // V자 셀을 제외한 직선 탐지
+  const lines = findLines(grid, vShapeCells)
+
+  const vScore = vShapes.reduce(
+    (sum, v) => sum + sumGroupValues(grid, v.positions) * 5,
+    0,
+  )
+
+  const lineScore = lines.reduce(
+    (sum, line) =>
+      sum + sumGroupValues(grid, line.positions) * getLineMultiplier(line.size),
+    0,
+  )
+
+  return vScore + lineScore
 }
 
 export function calculateScore(
@@ -37,7 +57,7 @@ export function calculateScore(
 ): ScoreBreakdown {
   const groupScore = calculateGroupScore(grid)
 
-  // score_multiply는 순차 곱셈 (2×후 3× = 6×), score_add는 곱셈 후 합산
+  // score_multiply는 순차 곱셈, score_add는 곱셈 후 합산
   const { multipliedTotal, effectBonus } = effects.reduce(
     (acc, effect) => {
       if (effect.type === 'score_multiply') {

@@ -1,4 +1,4 @@
-export { ROWS, COLS, getAdjacentSymbols, findConnectedGroups } from './grid'
+export { ROWS, COLS, getAdjacentSymbols, findLines, detectVShapes, isFullHouse } from './grid'
 export type { ConnectedGroup } from './grid'
 
 export { calculateGroupScore, calculateScore } from './score'

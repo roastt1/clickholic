@@ -22,7 +22,7 @@ describe('calculateGroupScore', () => {
     expect(calculateGroupScore(grid)).toBe(0)
   })
 
-  test('cherry 3개 연결(groupValue=20) → 20×3×1 = 60', () => {
+  test('가로 3개(groupValue=20) → 20×3×1 = 60', () => {
     const grid = makeGrid([
       ['cherry', 'cherry', 'cherry', 'grape', 'coin'],
       ['lemon',  'gem',    'crown',  'skull', 'lucky7'],
@@ -31,7 +31,7 @@ describe('calculateGroupScore', () => {
     expect(calculateGroupScore(grid)).toBe(60)
   })
 
-  test('cherry 4개 연결(groupValue=20) → 20×4×2 = 160', () => {
+  test('가로 4개(groupValue=20) → 20×4×2 = 160', () => {
     const grid = makeGrid([
       ['cherry', 'cherry', 'cherry', 'cherry', 'coin'],
       ['lemon',  'gem',    'crown',  'skull',  'lucky7'],
@@ -40,22 +40,49 @@ describe('calculateGroupScore', () => {
     expect(calculateGroupScore(grid)).toBe(160)
   })
 
-  test('cherry 5개 이상 연결(groupValue=20) → 20×5×4 = 400', () => {
+  test('가로 5개(groupValue=20) → 20×5×3 = 300', () => {
     const grid = makeGrid([
       ['cherry', 'cherry', 'cherry', 'cherry', 'cherry'],
       ['lemon',  'gem',    'crown',  'skull',  'lucky7'],
       ['grape',  'lemon',  'coin',   'gem',    'crown'],
     ], 20)
-    expect(calculateGroupScore(grid)).toBe(400)
+    expect(calculateGroupScore(grid)).toBe(300)
   })
 
-  test('skull 3개 연결(groupValue=-20) → 감점 -60', () => {
+  test('skull 가로 3개(groupValue=-20) → 감점 -60', () => {
     const grid = [
       [makeSymbol('skull', -20), makeSymbol('skull', -20), makeSymbol('skull', -20), makeSymbol('lemon', 10), makeSymbol('coin', 10)],
       [makeSymbol('cherry', 20), makeSymbol('gem', 10),    makeSymbol('crown', 10),  makeSymbol('grape', 10), makeSymbol('lucky7', 10)],
       [makeSymbol('lemon', 10),  makeSymbol('coin', 10),   makeSymbol('gem', 10),    makeSymbol('crown', 10), makeSymbol('grape', 10)],
     ]
     expect(calculateGroupScore(grid)).toBe(-60)
+  })
+
+  test('V자(∨) 패턴(groupValue=10) → 10×5×5 = 250', () => {
+    // V자: (0,0)(1,1)(2,2)(1,3)(0,4) = cherry, 나머지는 우연한 직선이 없도록 배치
+    const grid = [
+      [makeSymbol('cherry', 10), makeSymbol('lemon',  10), makeSymbol('grape',  10), makeSymbol('crown',  10), makeSymbol('cherry', 10)],
+      [makeSymbol('coin',   10), makeSymbol('cherry', 10), makeSymbol('gem',    10), makeSymbol('cherry', 10), makeSymbol('skull',  10)],
+      [makeSymbol('lucky7', 10), makeSymbol('grape',  10), makeSymbol('cherry', 10), makeSymbol('lemon',  10), makeSymbol('crown',  10)],
+    ]
+    expect(calculateGroupScore(grid)).toBe(250)
+  })
+
+  test('역V자(∧) 패턴(groupValue=10) → 10×5×5 = 250', () => {
+    // 역V자: (2,0)(1,1)(0,2)(1,3)(2,4) = grape
+    const grid = [
+      [makeSymbol('lemon', 10),  makeSymbol('coin', 10),  makeSymbol('grape', 10), makeSymbol('cherry', 10), makeSymbol('lemon', 10)],
+      [makeSymbol('coin', 10),   makeSymbol('grape', 10), makeSymbol('lemon', 10), makeSymbol('grape', 10),  makeSymbol('coin', 10)],
+      [makeSymbol('grape', 10),  makeSymbol('lemon', 10), makeSymbol('coin', 10),  makeSymbol('cherry', 10), makeSymbol('grape', 10)],
+    ]
+    expect(calculateGroupScore(grid)).toBe(250)
+  })
+
+  test('풀 하우스(groupValue=10) → 10×15×10 = 1500', () => {
+    const grid = Array.from({ length: 3 }, () =>
+      Array.from({ length: 5 }, () => makeSymbol('coin', 10)),
+    )
+    expect(calculateGroupScore(grid)).toBe(1500)
   })
 })
 
@@ -71,7 +98,7 @@ describe('calculateScore', () => {
     expect(result.total).toBe(0)
   })
 
-  test('cherry 3개(groupValue=20) + 이펙트 없음 → total=60', () => {
+  test('가로 3개(groupValue=20) + 이펙트 없음 → total=60', () => {
     const grid = makeGrid([
       ['cherry', 'cherry', 'cherry', 'grape', 'coin'],
       ['lemon',  'gem',    'crown',  'skull', 'lucky7'],

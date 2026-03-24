@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import type { SlotSymbol } from '@/types/symbol'
-import { findConnectedGroups } from '@/lib/engine/grid'
+import { findLines } from '@/lib/engine/grid'
 import { SymbolCell } from './SymbolCell'
 
 interface SlotGridProps {
@@ -13,7 +13,7 @@ interface SlotGridProps {
 export function SlotGrid({ grid, isSpinning = false }: SlotGridProps) {
   const highlightedPositions = useMemo(() => {
     if (!grid) return new Set<string>()
-    const groups = findConnectedGroups(grid)
+    const groups = findLines(grid)
     const positions = new Set<string>()
     for (const group of groups) {
       for (const [row, col] of group.positions) {
