@@ -169,11 +169,13 @@ git commit -m "feat: 슬롯 스핀 Elastic 애니메이션 추가 (#3)"
 gh pr create \
   --title "feat: 슬롯 스핀 애니메이션 구현" \
   --body "## 변경 사항\n- 내용\n\n## 테스트\n- [ ] 체크리스트\n\nCloses #3" \
-  --base main
+  --base dev
 ```
 
 - PR body에 반드시 `Closes #{issue-number}` 포함 (PR merge 시 Issue 자동 닫힘)
-- main 브랜치에 직접 push 금지, 반드시 PR을 통해 merge
+- **feature/fix 브랜치 → `dev`** PR을 통해 merge
+- **`dev` → `main`** 은 배포 시에만 (릴리즈 PR)
+- `main`, `dev` 브랜치에 직접 push 금지
 
 ---
 
