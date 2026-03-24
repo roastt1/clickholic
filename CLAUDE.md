@@ -7,14 +7,14 @@
 
 ## 기술 스택
 
-| 영역 | 기술 |
-|------|------|
-| 프레임워크 | Next.js (App Router), TypeScript |
-| 스타일링 | Tailwind CSS v4 |
-| 상태 관리 | Zustand (게임 엔진 + 영속성) |
+| 영역       | 기술                              |
+| ---------- | --------------------------------- |
+| 프레임워크 | Next.js (App Router), TypeScript  |
+| 스타일링   | Tailwind CSS v4                   |
+| 상태 관리  | Zustand (게임 엔진 + 영속성)      |
 | 애니메이션 | Framer Motion (슬롯 Elastic 효과) |
-| 사운드 | use-sound |
-| 백엔드 | Supabase (리더보드, 점수 저장) |
+| 사운드     | use-sound                         |
+| 백엔드     | Supabase (리더보드, 점수 저장)    |
 
 ## 개발 명령어
 
@@ -38,6 +38,7 @@ types/         → 공유 인터페이스 (Symbol, Card, Effect)
 ## 아키텍처 원칙
 
 ### 게임 엔진 분리 (CRITICAL)
+
 `lib/engine/` 하위 파일은 React/DOM에 의존하지 않는 **순수 함수만** 포함한다.
 점수 계산, 심볼 상호작용, 카드 효과 적용 로직은 반드시 여기에 작성한다.
 UI 컴포넌트 내부에 게임 로직을 직접 작성하지 않는다.
@@ -50,26 +51,29 @@ export function calculateScore(symbols: Symbol[]): number { ... }
 ```
 
 ### Interface 중심 설계
+
 새로운 Symbol, Card, Effect를 추가할 때 반드시 `types/` 인터페이스를 먼저 확인하고 확장한다.
 구체 구현보다 인터페이스에 의존하여 카드 추가/변경 비용을 최소화한다.
 
 ```typescript
 // types/card.ts
 export interface ItemCard {
-  id: string
-  name: string
-  description: string
-  apply: (state: GameState) => GameState  // 순수 함수
+    id: string;
+    name: string;
+    description: string;
+    apply: (state: GameState) => GameState; // 순수 함수
 }
 ```
 
 ### 렌더링 전략
+
 Canvas를 사용하지 않는다. DOM + Framer Motion으로 슬롯 애니메이션을 구현한다.
 슬롯 스핀 효과는 Framer Motion의 `spring` / `elastic` 트랜지션을 사용한다.
 
 ## 성능 규칙
 
 ### useMemo 적극 활용 (CRITICAL)
+
 3x5 슬롯의 15개 심볼은 매 스핀마다 연산 비용이 발생한다.
 불필요한 리렌더링을 방지하기 위해 심볼 연산 결과는 반드시 `useMemo`로 메모이제이션한다.
 
@@ -92,25 +96,28 @@ const symbolGrid = useMemo(
 ## 코딩 규칙
 
 ### 불변성
+
 상태를 직접 수정하지 않는다. 항상 새 객체를 반환한다.
 
 ```typescript
 // ❌ 금지
-state.score += points
+state.score += points;
 
 // ✅ 올바른 방법
-return { ...state, score: state.score + points }
+return { ...state, score: state.score + points };
 ```
 
 ### 환경변수
+
 Supabase URL, anon key 등 모든 시크릿은 `.env.local`에만 저장한다. 코드에 하드코딩 금지.
 
 ```typescript
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-if (!supabaseUrl) throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set')
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+if (!supabaseUrl) throw new Error("NEXT_PUBLIC_SUPABASE_URL is not set");
 ```
 
 ### 파일 크기
+
 파일당 800줄 이하, 함수당 50줄 이하를 유지한다.
 게임 엔진 로직이 복잡해지면 `lib/engine/score.ts`, `lib/engine/effects.ts` 등으로 분리한다.
 
@@ -130,6 +137,7 @@ gh issue create \
 ```
 
 라벨 규칙:
+
 - 새 기능 → `enhancement`
 - 버그 수정 → `bug`
 - 문서/설정 → `documentation`
@@ -147,6 +155,7 @@ git checkout -b fix/#7-score-calculation-error
 ```
 
 브랜치 접두사:
+
 - `feat/` → 새 기능
 - `fix/` → 버그 수정
 - `refactor/` → 리팩터링
@@ -172,7 +181,7 @@ gh pr create \
   --base dev
 ```
 
-- PR body에 반드시 `Closes #{issue-number}` 포함 (PR merge 시 Issue 자동 닫힘)
+- PR body에 반드시 `Close #{issue-number}` 포함 (PR merge 시 Issue 자동 닫힘)
 - **feature/fix 브랜치 → `dev`** PR을 통해 merge
 - **`dev` → `main`** 은 배포 시에만 (릴리즈 PR)
 - `main`, `dev` 브랜치에 직접 push 금지

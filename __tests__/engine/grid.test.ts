@@ -2,10 +2,9 @@ import { getAdjacentSymbols, findConnectedGroups, ROWS, COLS } from '@/lib/engin
 import type { SlotSymbol } from '@/types/symbol'
 
 function makeSymbol(type: SlotSymbol['type'], id = type): SlotSymbol {
-  return { id, type, rarity: 'common', baseScore: 10 }
+  return { id, type, tier: 'L1', groupValue: 10 }
 }
 
-// 3×5 그리드 헬퍼: 타입 문자열 배열로 빠르게 생성
 function makeGrid(types: string[][]): SlotSymbol[][] {
   return types.map((row) =>
     row.map((t) => makeSymbol(t as SlotSymbol['type'])),
@@ -14,13 +13,13 @@ function makeGrid(types: string[][]): SlotSymbol[][] {
 
 describe('getAdjacentSymbols', () => {
   const grid = makeGrid([
-    ['cherry', 'grape',  'lemon',  'orange', 'coin'],
-    ['gem',    'crown',  'bomb',   'skull',  'cherry'],
-    ['grape',  'lemon',  'orange', 'coin',   'gem'],
+    ['cherry', 'grape',  'lemon',  'coin',  'gem'],
+    ['crown',  'lucky7', 'skull',  'lemon', 'cherry'],
+    ['grape',  'lemon',  'cherry', 'coin',  'gem'],
   ])
 
   test('중앙 셀은 4개 인접 심볼 반환', () => {
-    const adj = getAdjacentSymbols(grid, 1, 2) // bomb
+    const adj = getAdjacentSymbols(grid, 1, 2) // skull
     expect(adj).toHaveLength(4)
   })
 
@@ -38,9 +37,9 @@ describe('getAdjacentSymbols', () => {
 describe('findConnectedGroups', () => {
   test('연결된 같은 심볼 3개 → 그룹 1개 반환', () => {
     const grid = makeGrid([
-      ['cherry', 'cherry', 'cherry', 'grape', 'grape'],
-      ['lemon',  'coin',   'gem',    'crown', 'bomb'],
-      ['skull',  'orange', 'lemon',  'coin',  'gem'],
+      ['cherry', 'cherry', 'cherry', 'grape',  'gem'],
+      ['lemon',  'coin',   'gem',    'crown',  'skull'],
+      ['skull',  'lemon',  'grape',  'coin',   'gem'],
     ])
     const groups = findConnectedGroups(grid)
     expect(groups).toHaveLength(1)
@@ -50,9 +49,9 @@ describe('findConnectedGroups', () => {
 
   test('연결된 심볼 2개는 그룹으로 인정하지 않음', () => {
     const grid = makeGrid([
-      ['cherry', 'cherry', 'grape',  'lemon', 'orange'],
-      ['coin',   'gem',    'crown',  'bomb',  'skull'],
-      ['grape',  'lemon',  'orange', 'coin',  'gem'],
+      ['cherry', 'cherry', 'grape',  'lemon', 'coin'],
+      ['gem',    'crown',  'lucky7', 'skull', 'lemon'],
+      ['grape',  'lemon',  'cherry', 'coin',  'gem'],
     ])
     const groups = findConnectedGroups(grid)
     expect(groups).toHaveLength(0)
@@ -60,9 +59,9 @@ describe('findConnectedGroups', () => {
 
   test('ㄴ자 모양 4개 연결도 1그룹으로 탐지', () => {
     const grid = makeGrid([
-      ['cherry', 'grape',  'lemon',  'orange', 'coin'],
-      ['cherry', 'cherry', 'lemon',  'crown',  'bomb'],
-      ['skull',  'cherry', 'orange', 'coin',   'gem'],
+      ['cherry', 'grape',  'lemon',  'coin',  'gem'],
+      ['cherry', 'cherry', 'lemon',  'crown', 'skull'],
+      ['skull',  'cherry', 'grape',  'coin',  'gem'],
     ])
     const groups = findConnectedGroups(grid)
     expect(groups).toHaveLength(1)
@@ -73,8 +72,8 @@ describe('findConnectedGroups', () => {
   test('독립된 두 그룹(각 3개)은 별도로 탐지', () => {
     const grid = makeGrid([
       ['cherry', 'cherry', 'cherry', 'grape', 'grape'],
-      ['lemon',  'coin',   'gem',    'grape', 'bomb'],
-      ['skull',  'orange', 'lemon',  'coin',  'gem'],
+      ['lemon',  'coin',   'gem',    'grape', 'skull'],
+      ['skull',  'lucky7', 'lemon',  'coin',  'gem'],
     ])
     const groups = findConnectedGroups(grid)
     expect(groups).toHaveLength(2)

@@ -1,22 +1,12 @@
 import type { SlotSymbol } from '@/types/symbol'
 
 export const SYMBOL_POOL: SlotSymbol[] = [
-  // ── common ──────────────────────────────────────────────
-  { id: 'cherry',     type: 'cherry',     rarity: 'common',   baseScore: 10 },
-  { id: 'grape',      type: 'grape',      rarity: 'common',   baseScore: 10 },
-  { id: 'lemon',      type: 'lemon',      rarity: 'common',   baseScore: 10 },
-  { id: 'orange',     type: 'orange',     rarity: 'common',   baseScore: 10 },
-
-  // ── uncommon ────────────────────────────────────────────
-  { id: 'coin',       type: 'coin',       rarity: 'uncommon', baseScore: 25 },
-  { id: 'bomb',       type: 'bomb',       rarity: 'uncommon', baseScore: 0  },
-  { id: 'skull',      type: 'skull',      rarity: 'uncommon', baseScore: 0  },
-
-  // ── rare ────────────────────────────────────────────────
-  { id: 'gem',        type: 'gem',        rarity: 'rare',     baseScore: 50 },
-  { id: 'wildcard',   type: 'wildcard',   rarity: 'rare',     baseScore: 30 },
-  { id: 'multiplier', type: 'multiplier', rarity: 'rare',     baseScore: 20 },
-
-  // ── legendary ───────────────────────────────────────────
-  { id: 'crown',      type: 'crown',      rarity: 'legendary', baseScore: 100 },
+  { id: 'skull',  type: 'skull',  tier: 'risk', groupValue: -20 },
+  { id: 'lemon',  type: 'lemon',  tier: 'L1',   groupValue: 10  },
+  { id: 'cherry', type: 'cherry', tier: 'L2',   groupValue: 20  },
+  { id: 'grape',  type: 'grape',  tier: 'L3',   groupValue: 35  },
+  { id: 'coin',   type: 'coin',   tier: 'L4',   groupValue: 60  },
+  { id: 'gem',    type: 'gem',    tier: 'L5',   groupValue: 90  },
+  { id: 'crown',  type: 'crown',  tier: 'L6',   groupValue: 130 },
+  { id: 'lucky7', type: 'lucky7', tier: 'L7',   groupValue: 200 },
 ]
