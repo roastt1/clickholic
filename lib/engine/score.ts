@@ -3,38 +3,31 @@ import type { Effect } from '@/types/effect'
 import { findConnectedGroups } from './grid'
 
 export interface ScoreBreakdown {
-  base: number
-  groupBonus: number
+  groupScore: number  // 연결 그룹 점수 합 (음수 가능)
   effectBonus: number
   total: number
 }
 
-// 연결 개수별 배율
-const GROUP_MULTIPLIERS: Record<number, number> = {
-  3: 2,
-  4: 3,
+// 연결 개수별 배율 (3→×1, 4→×2, 5+→×4)
+const GROUP_SIZE_MULTIPLIERS: Record<number, number> = {
+  3: 1,
+  4: 2,
 }
-const GROUP_MULTIPLIER_MAX = 5 // 5개 이상
+const GROUP_SIZE_MULTIPLIER_MAX = 4 // 5개 이상
 
-function getGroupMultiplier(size: number): number {
-  return GROUP_MULTIPLIERS[size] ?? GROUP_MULTIPLIER_MAX
-}
-
-export function calculateBaseScore(grid: SlotSymbol[][]): number {
-  return grid.flat().reduce((sum, symbol) => sum + symbol.baseScore, 0)
+function getSizeMultiplier(size: number): number {
+  return GROUP_SIZE_MULTIPLIERS[size] ?? GROUP_SIZE_MULTIPLIER_MAX
 }
 
-export function calculateGroupBonus(grid: SlotSymbol[][]): number {
+export function calculateGroupScore(grid: SlotSymbol[][]): number {
   const groups = findConnectedGroups(grid)
 
-  return groups.reduce((bonus, group) => {
-    // 그룹 내 심볼 baseScore 합 × 배율로 추가 보너스 계산
-    const groupBaseScore = group.positions.reduce(
-      (sum, [row, col]) => sum + grid[row][col].baseScore,
+  return groups.reduce((total, group) => {
+    const groupValueSum = group.positions.reduce(
+      (sum, [row, col]) => sum + grid[row][col].groupValue,
       0,
     )
-    const multiplier = getGroupMultiplier(group.size)
-    return bonus + groupBaseScore * (multiplier - 1) // 기본 점수에서 추가되는 부분만
+    return total + groupValueSum * getSizeMultiplier(group.size)
   }, 0)
 }
 
@@ -42,11 +35,9 @@ export function calculateScore(
   grid: SlotSymbol[][],
   effects: Effect[],
 ): ScoreBreakdown {
-  const base = calculateBaseScore(grid)
-  const groupBonus = calculateGroupBonus(grid)
-  const subtotal = base + groupBonus
+  const groupScore = calculateGroupScore(grid)
 
-  // score_multiply는 순차 곱셈 적용 (2×후 3× = 6×), score_add는 곱셈 후 합산
+  // score_multiply는 순차 곱셈 (2×후 3× = 6×), score_add는 곱셈 후 합산
   const { multipliedTotal, effectBonus } = effects.reduce(
     (acc, effect) => {
       if (effect.type === 'score_multiply') {
@@ -57,10 +48,10 @@ export function calculateScore(
       }
       return acc
     },
-    { multipliedTotal: subtotal, effectBonus: 0 },
+    { multipliedTotal: groupScore, effectBonus: 0 },
   )
 
   const total = Math.floor(multipliedTotal + effectBonus)
 
-  return { base, groupBonus, effectBonus, total }
+  return { groupScore, effectBonus, total }
 }
