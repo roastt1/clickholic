@@ -3,17 +3,34 @@
 import { useMemo } from 'react'
 import type { SlotSymbol } from '@/types/symbol'
 import { findLines } from '@/lib/engine/grid'
-import { SymbolCell } from './SymbolCell'
+import { useGameStore, REEL_FAKE_COUNT } from '@/store/gameStore'
+import { ReelColumn } from './ReelColumn'
+
+// grid=null일 때 표시할 정적 더미 스트립 (Math.random 없이 결정론적으로 생성)
+const FALLBACK_TYPES: SlotSymbol['type'][] = [
+  'cherry', 'grape', 'lemon', 'coin', 'gem', 'crown', 'lucky7', 'skull',
+]
+const FALLBACK_STRIPS: SlotSymbol[][] = Array.from({ length: 5 }, (_, col) =>
+  Array.from({ length: REEL_FAKE_COUNT }, (_, i) => ({
+    id:         `fallback-${col}-${i}`,
+    type:       FALLBACK_TYPES[(col + i) % FALLBACK_TYPES.length],
+    tier:       'L1' as const,
+    groupValue: 10,
+  }))
+)
 
 interface SlotGridProps {
-  grid: SlotSymbol[][] | null
-  isSpinning?: boolean
+  grid:       SlotSymbol[][] | null
+  isSpinning?: boolean  // kept for API compatibility, animation is store-driven
 }
 
-export function SlotGrid({ grid, isSpinning = false }: SlotGridProps) {
+export function SlotGrid({ grid }: SlotGridProps) {
+  const spinId     = useGameStore((s) => s.spinId)
+  const spinStrips = useGameStore((s) => s.spinStrips)
+
   const highlightedPositions = useMemo(() => {
     if (!grid) return new Set<string>()
-    const groups = findLines(grid)
+    const groups    = findLines(grid)
     const positions = new Set<string>()
     for (const group of groups) {
       for (const [row, col] of group.positions) {
@@ -23,6 +40,7 @@ export function SlotGrid({ grid, isSpinning = false }: SlotGridProps) {
     return positions
   }, [grid])
 
+  // ── 스켈레톤 (grid=null) ───────────────────────────────────────────────────
   if (!grid) {
     return (
       <div className="flex flex-col gap-2">
@@ -31,7 +49,11 @@ export function SlotGrid({ grid, isSpinning = false }: SlotGridProps) {
             {Array.from({ length: 5 }, (_, col) => (
               <div
                 key={col}
-                className="w-14 h-14 rounded-xl bg-zinc-100 dark:bg-zinc-800 ring-1 ring-black/10 dark:ring-white/10"
+                className="w-14 h-14 rounded-xl"
+                style={{
+                  background: 'var(--bg-card)',
+                  border:     '1px solid var(--border-dim)',
+                }}
               />
             ))}
           </div>
@@ -40,21 +62,29 @@ export function SlotGrid({ grid, isSpinning = false }: SlotGridProps) {
     )
   }
 
+  // ── 실제 그리드: 열 기반 릴 렌더링 ──────────────────────────────────────
+  const effectiveStrips = spinStrips ?? FALLBACK_STRIPS
+
   return (
-    <div className="flex flex-col gap-2">
-      {grid.map((row, rowIdx) => (
-        <div key={rowIdx} className="flex gap-2">
-          {row.map((symbol, colIdx) => (
-            <SymbolCell
-              key={`${rowIdx}-${colIdx}`}
-              symbol={symbol}
-              isHighlighted={highlightedPositions.has(`${rowIdx}-${colIdx}`)}
-              isSpinning={isSpinning}
-              animationDelay={isSpinning ? colIdx * 0.05 : 0}
-            />
-          ))}
-        </div>
-      ))}
+    <div className="flex gap-2">
+      {Array.from({ length: 5 }, (_, colIdx) => {
+        const finalSymbols = [grid[0][colIdx], grid[1][colIdx], grid[2][colIdx]]
+        const highlighted  = [
+          highlightedPositions.has(`0-${colIdx}`),
+          highlightedPositions.has(`1-${colIdx}`),
+          highlightedPositions.has(`2-${colIdx}`),
+        ]
+        return (
+          <ReelColumn
+            key={colIdx}
+            fakeSymbols={effectiveStrips[colIdx]}
+            finalSymbols={finalSymbols}
+            highlighted={highlighted}
+            columnIndex={colIdx}
+            spinId={spinId}
+          />
+        )
+      })}
     </div>
   )
 }

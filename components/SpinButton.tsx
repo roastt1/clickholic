@@ -12,26 +12,34 @@ const PHASE_LABEL: Record<GamePhase, string> = {
   idle:        'SPIN',
   spinning:    '...',
   scoring:     '...',
-  card_select: '카드를 선택하세요',
+  card_select: '...',
   game_over:   'GAME OVER',
 }
 
 export function SpinButton({ phase, onSpin }: SpinButtonProps) {
   const isDisabled = phase !== 'idle'
+  const label      = PHASE_LABEL[phase]
 
   return (
     <motion.button
       onClick={onSpin}
       disabled={isDisabled}
-      className={[
-        'w-40 h-12 rounded-full font-bold tracking-widest text-sm transition-colors',
-        isDisabled
-          ? 'bg-zinc-200 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600 cursor-not-allowed'
-          : 'bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900 cursor-pointer hover:bg-zinc-700 dark:hover:bg-zinc-200',
-      ].join(' ')}
-      whileTap={isDisabled ? {} : { scale: 0.95 }}
+      className="w-44 h-12 rounded-full font-black tracking-[0.25em] text-sm uppercase"
+      style={{
+        fontFamily:  'var(--font-orbitron)',
+        background:  isDisabled ? 'transparent' : 'transparent',
+        color:       isDisabled ? 'var(--text-muted)' : 'var(--neon-cyan)',
+        border:      `1px solid ${isDisabled ? 'var(--border-dim)' : 'var(--neon-cyan)'}`,
+        boxShadow:   isDisabled
+          ? 'none'
+          : '0 0 16px var(--neon-cyan), 0 0 32px rgba(0,229,255,0.3), inset 0 0 16px rgba(0,229,255,0.06)',
+        cursor:      isDisabled ? 'not-allowed' : 'pointer',
+        animation:   isDisabled ? 'none' : 'spin-cycle 2.5s ease-in-out infinite',
+      }}
+      whileTap={isDisabled ? {} : { scale: 0.94 }}
+      whileHover={isDisabled ? {} : { scale: 1.04 }}
     >
-      {PHASE_LABEL[phase]}
+      {label}
     </motion.button>
   )
 }

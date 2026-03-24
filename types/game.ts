@@ -24,4 +24,8 @@ export interface GameState {
   currentGrid: SlotSymbol[][] | null // 2D [row][col], null = 스핀 전
   spinHistory: SpinResult[]
   round: number
+  offeredCards: ItemCard[]           // card_select 페이즈에서 제시되는 카드 3장
+  spinId: number                     // 스핀마다 증가 — 릴 애니메이션 트리거용
+  spinStrips: SlotSymbol[][] | null  // 5열 × FAKE_COUNT개 더미 심볼 (릴 스트립)
+  scoreGain: number                  // 마지막 스핀에서 얻은 점수 (점수 플래시용)
 }
