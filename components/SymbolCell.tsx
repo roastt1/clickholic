@@ -4,15 +4,15 @@ import { memo } from 'react'
 import { motion } from 'framer-motion'
 import type { SlotSymbol } from '@/types/symbol'
 
-const SYMBOL_CONFIG: Record<SlotSymbol['type'], { emoji: string; bg: string; ring: string }> = {
-  skull:  { emoji: '💀', bg: 'bg-zinc-300 dark:bg-zinc-700',         ring: 'ring-zinc-500' },
-  lemon:  { emoji: '🍋', bg: 'bg-yellow-100 dark:bg-yellow-950',     ring: 'ring-yellow-400' },
-  cherry: { emoji: '🍒', bg: 'bg-red-100 dark:bg-red-950',           ring: 'ring-red-400' },
-  grape:  { emoji: '🍇', bg: 'bg-purple-100 dark:bg-purple-950',     ring: 'ring-purple-400' },
-  coin:   { emoji: '💴', bg: 'bg-amber-100 dark:bg-amber-950',       ring: 'ring-amber-400' },
-  gem:    { emoji: '💎', bg: 'bg-sky-100 dark:bg-sky-950',           ring: 'ring-sky-400' },
-  crown:  { emoji: '👑', bg: 'bg-yellow-100 dark:bg-yellow-900',     ring: 'ring-yellow-500' },
-  lucky7: { emoji: '7️⃣',  bg: 'bg-rose-100 dark:bg-rose-950',        ring: 'ring-rose-500' },
+const SYMBOL_CONFIG: Record<SlotSymbol['type'], { emoji: string; neon: string }> = {
+  skull:  { emoji: '💀', neon: '#6b7280' },
+  lemon:  { emoji: '🍋', neon: '#eab308' },
+  cherry: { emoji: '🍒', neon: '#ff2d78' },
+  grape:  { emoji: '🍇', neon: '#a855f7' },
+  coin:   { emoji: '💴', neon: '#f59e0b' },
+  gem:    { emoji: '💎', neon: '#00e5ff' },
+  crown:  { emoji: '👑', neon: '#fbbf24' },
+  lucky7: { emoji: '7️⃣',  neon: '#00ff88' },
 }
 
 interface SymbolCellProps {
@@ -28,16 +28,21 @@ export const SymbolCell = memo(function SymbolCell({
   animationDelay = 0,
   isSpinning = false,
 }: SymbolCellProps) {
-  const config = SYMBOL_CONFIG[symbol.type]
+  const { emoji, neon } = SYMBOL_CONFIG[symbol.type]
 
   return (
     <motion.div
-      className={[
-        'flex items-center justify-center rounded-xl text-3xl',
-        'w-14 h-14 select-none transition-shadow duration-200',
-        config.bg,
-        isHighlighted ? `ring-2 ${config.ring} shadow-lg scale-105` : 'ring-1 ring-black/10 dark:ring-white/10',
-      ].join(' ')}
+      className="flex items-center justify-center rounded-xl text-2xl sm:text-3xl w-12 h-12 sm:w-14 sm:h-14 select-none"
+      style={{
+        background: isHighlighted
+          ? `color-mix(in srgb, ${neon} 12%, #0c0c22)`
+          : 'var(--bg-card)',
+        border: `1px solid ${isHighlighted ? neon : 'var(--border-dim)'}`,
+        boxShadow: isHighlighted
+          ? `0 0 10px ${neon}99, 0 0 20px ${neon}44, inset 0 0 10px ${neon}15`
+          : 'none',
+        transition: 'box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease',
+      }}
       initial={isSpinning ? { y: -80, opacity: 0 } : false}
       animate={{ y: 0, opacity: 1 }}
       transition={{
@@ -47,7 +52,7 @@ export const SymbolCell = memo(function SymbolCell({
         delay: animationDelay,
       }}
     >
-      {config.emoji}
+      {emoji}
     </motion.div>
   )
 })
