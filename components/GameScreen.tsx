@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { ScoreBoard } from './ScoreBoard'
@@ -10,82 +10,113 @@ import { CardPanel } from './CardPanel'
 import type { ItemCard } from '@/types/card'
 
 export function GameScreen() {
-  const phase      = useGameStore((s) => s.phase)
-  const score      = useGameStore((s) => s.score)
-  const spinsLeft  = useGameStore((s) => s.spinsLeft)
-  const round      = useGameStore((s) => s.round)
+  const phase       = useGameStore((s) => s.phase)
+  const score       = useGameStore((s) => s.score)
+  const spinsLeft   = useGameStore((s) => s.spinsLeft)
+  const round       = useGameStore((s) => s.round)
   const currentGrid = useGameStore((s) => s.currentGrid)
-  const spin       = useGameStore((s) => s.spin)
-  const selectCard = useGameStore((s) => s.selectCard)
-  const resetGame  = useGameStore((s) => s.resetGame)
-
-  // spinning phase는 UI 애니메이션만 — 실제 결과는 이미 스토어에 있음
-  const isSpinning = phase === 'spinning'
+  const spin        = useGameStore((s) => s.spin)
+  const selectCard  = useGameStore((s) => s.selectCard)
+  const resetGame   = useGameStore((s) => s.resetGame)
 
   const handleSelectCard = useCallback(
     (card: ItemCard) => selectCard(card),
     [selectCard],
   )
 
-  // spinning 상태를 짧게 유지해 애니메이션이 재생되도록 함
-  useEffect(() => {
-    if (phase !== 'spinning') return
-    // executeSpin은 동기 함수라 즉시 card_select로 전환됨
-    // SymbolCell 애니메이션 duration(~0.6s) 동안만 spinning 표시
-  }, [phase])
-
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 p-6">
-      <div className="flex flex-col items-center gap-6 w-full max-w-sm">
+    <div
+      className="flex flex-col items-center min-h-screen px-4 pt-10 pb-6 sm:pt-14 sm:px-6"
+      style={{ background: 'var(--bg-primary)' }}
+    >
+      <div className="flex flex-col items-center gap-5 w-full max-w-sm">
 
-        {/* 타이틀 */}
-        <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
-          AGUMATCH
-        </h1>
-
-        {/* 스코어보드 */}
-        <ScoreBoard score={score} spinsLeft={spinsLeft} round={round} />
-
-        {/* 슬롯 그리드 */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 shadow-sm ring-1 ring-black/5 dark:ring-white/5">
-          <SlotGrid grid={currentGrid} isSpinning={isSpinning} />
+        {/* ── Title ─────────────────────────────────────── */}
+        <div className="flex flex-col items-center gap-1 pt-2">
+          <h1
+            className="text-xl sm:text-2xl font-black tracking-[0.25em] uppercase neon-cyan"
+            style={{ fontFamily: 'var(--font-orbitron)' }}
+          >
+            AGUMATCH
+          </h1>
+          <div
+            className="h-px w-32"
+            style={{
+              background:
+                'linear-gradient(to right, transparent, var(--neon-cyan), transparent)',
+            }}
+          />
         </div>
 
-        {/* 스핀 버튼 */}
+        {/* ── Scoreboard ────────────────────────────────── */}
+        <ScoreBoard score={score} spinsLeft={spinsLeft} round={round} />
+
+        {/* ── Slot grid ─────────────────────────────────── */}
+        <div
+          className="crt-screen rounded-2xl p-3 sm:p-4 arcade-border"
+          style={{ background: 'var(--bg-secondary)' }}
+        >
+          <SlotGrid grid={currentGrid} />
+        </div>
+
+        {/* ── Spin button ───────────────────────────────── */}
         <SpinButton phase={phase} onSpin={spin} />
 
-        {/* 카드 패널 */}
-        <CardPanel
-          visible={phase === 'card_select'}
-          onSelect={handleSelectCard}
-        />
-
-        {/* 게임 오버 */}
+        {/* ── Game over ─────────────────────────────────── */}
         <AnimatePresence>
           {phase === 'game_over' && (
             <motion.div
-              className="flex flex-col items-center gap-3 text-center"
-              initial={{ opacity: 0, scale: 0.9 }}
+              className="flex flex-col items-center gap-4 text-center mt-2"
+              initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             >
-              <p className="text-lg font-bold text-zinc-700 dark:text-zinc-300">
-                최종 점수
+              <p
+                className="text-xs tracking-[0.3em] uppercase neon-pink"
+                style={{ fontFamily: 'var(--font-orbitron)' }}
+              >
+                Game Over
               </p>
-              <p className="text-4xl font-black text-zinc-900 dark:text-zinc-50">
+              <p
+                className="text-5xl font-black tabular-nums neon-gold"
+                style={{ fontFamily: 'var(--font-space-mono)' }}
+              >
                 {score.toLocaleString()}
               </p>
               <button
                 onClick={resetGame}
-                className="mt-2 px-6 py-2 rounded-full bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900 font-semibold text-sm hover:bg-zinc-700 dark:hover:bg-zinc-200 transition-colors"
+                className="mt-1 px-8 py-2.5 rounded-full text-xs tracking-[0.2em] uppercase font-bold transition-all duration-200"
+                style={{
+                  fontFamily:  'var(--font-orbitron)',
+                  background:  'transparent',
+                  color:       'var(--neon-cyan)',
+                  border:      '1px solid var(--neon-cyan)',
+                  boxShadow:   '0 0 12px var(--neon-cyan), inset 0 0 12px rgba(0,229,255,0.06)',
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget
+                  el.style.background  = 'rgba(0,229,255,0.1)'
+                  el.style.boxShadow   = '0 0 24px var(--neon-cyan), inset 0 0 20px rgba(0,229,255,0.1)'
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget
+                  el.style.background  = 'transparent'
+                  el.style.boxShadow   = '0 0 12px var(--neon-cyan), inset 0 0 12px rgba(0,229,255,0.06)'
+                }}
               >
-                다시 하기
+                Play Again
               </button>
             </motion.div>
           )}
         </AnimatePresence>
 
       </div>
+
+      {/* ── Card panel — fixed overlay, outside flex flow ─ */}
+      <CardPanel
+        visible={phase === 'card_select'}
+        onSelect={handleSelectCard}
+      />
     </div>
   )
 }

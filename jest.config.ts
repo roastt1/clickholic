@@ -6,7 +6,8 @@ const config: Config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
-  testMatch: ['**/__tests__/**/*.test.ts'],
+  // .ts (엔진/스토어), .tsx (컴포넌트) 모두 매칭
+  testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
 }
 
 export default config
