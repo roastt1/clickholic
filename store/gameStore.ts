@@ -42,10 +42,12 @@ const INITIAL_STATE: GameState = {
   spinId:          0,
   spinStrips:      null,
   scoreGain:       0,
+  pendingPhase:    null,
 }
 
 interface GameStore extends GameState {
   spin: () => void
+  finishSpin: () => void
   selectItem: (card: ItemCard) => void
   resetGame: () => void
 }
@@ -62,8 +64,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     if (phase !== 'idle') return
 
-    set({ phase: 'spinning' })
-
     const result           = executeSpin(SYMBOL_POOL, activeEffects)
     const remainingEffects = tickEffects(activeEffects)
     const newRoundScore    = roundScore + result.score
@@ -78,8 +78,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       nextPhase = 'idle'
     }
 
+    // phase는 'spinning'으로 유지 — finishSpin() 호출 시 nextPhase로 전환
     set({
-      phase:         nextPhase,
+      phase:         'spinning',
+      pendingPhase:  nextPhase,
       currentGrid:   result.symbols,
       score:         newScore,
       roundScore:    newRoundScore,
@@ -91,6 +93,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
       spinStrips:    makeSpinStrips(),
       scoreGain:     result.score,
     })
+  },
+
+  finishSpin: () => {
+    const { phase, pendingPhase } = get()
+    if (phase !== 'spinning' || !pendingPhase) return
+    set({ phase: pendingPhase, pendingPhase: null })
   },
 
   selectItem: (card: ItemCard) => {

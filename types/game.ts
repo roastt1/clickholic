@@ -30,4 +30,5 @@ export interface GameState {
   spinId: number            // 스핀마다 증가 — 릴 애니메이션 트리거용
   spinStrips: SlotSymbol[][] | null
   scoreGain: number         // 마지막 스핀에서 얻은 점수 (점수 플래시용)
+  pendingPhase: GamePhase | null  // 애니메이션 완료 후 전환될 페이즈
 }
