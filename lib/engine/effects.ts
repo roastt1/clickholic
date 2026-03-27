@@ -8,11 +8,8 @@ export function tickEffects(effects: Effect[]): Effect[] {
     if (effect.duration === 'permanent') {
       return [...acc, effect]
     }
-    if (effect.duration === 'next_spin') {
-      return acc // 제거
-    }
     // number: 1 감소, 0이 되면 제거
-    const remaining = effect.duration - 1
+    const remaining = (effect.duration as number) - 1
     if (remaining <= 0) return acc
     return [...acc, { ...effect, duration: remaining }]
   }, [])

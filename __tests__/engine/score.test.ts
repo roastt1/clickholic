@@ -59,7 +59,6 @@ describe('calculateGroupScore', () => {
   })
 
   test('V자(∨) 패턴(groupValue=10) → 10×5×5 = 250', () => {
-    // V자: (0,0)(1,1)(2,2)(1,3)(0,4) = cherry, 나머지는 우연한 직선이 없도록 배치
     const grid = [
       [makeSymbol('cherry', 10), makeSymbol('lemon',  10), makeSymbol('grape',  10), makeSymbol('crown',  10), makeSymbol('cherry', 10)],
       [makeSymbol('coin',   10), makeSymbol('cherry', 10), makeSymbol('gem',    10), makeSymbol('cherry', 10), makeSymbol('skull',  10)],
@@ -69,7 +68,6 @@ describe('calculateGroupScore', () => {
   })
 
   test('역V자(∧) 패턴(groupValue=10) → 10×5×5 = 250', () => {
-    // 역V자: (2,0)(1,1)(0,2)(1,3)(2,4) = grape
     const grid = [
       [makeSymbol('lemon', 10),  makeSymbol('coin', 10),  makeSymbol('grape', 10), makeSymbol('cherry', 10), makeSymbol('lemon', 10)],
       [makeSymbol('coin', 10),   makeSymbol('grape', 10), makeSymbol('lemon', 10), makeSymbol('grape', 10),  makeSymbol('coin', 10)],
@@ -83,6 +81,18 @@ describe('calculateGroupScore', () => {
       Array.from({ length: 5 }, () => makeSymbol('coin', 10)),
     )
     expect(calculateGroupScore(grid)).toBe(1500)
+  })
+
+  test('symbol_score_multiply 적용: cherry×2 → 40×3×1 = 120', () => {
+    const grid = makeGrid([
+      ['cherry', 'cherry', 'cherry', 'grape', 'coin'],
+      ['lemon',  'gem',    'crown',  'skull', 'lucky7'],
+      ['grape',  'lemon',  'coin',   'gem',   'crown'],
+    ], 20)
+    const effects: Effect[] = [
+      { type: 'symbol_score_multiply', value: 2, duration: 'permanent', targetSymbol: 'cherry', description: 'cherry ×2' },
+    ]
+    expect(calculateGroupScore(grid, effects)).toBe(120) // 20×2 × 3 × 1
   })
 })
 
@@ -114,19 +124,22 @@ describe('calculateScore', () => {
       ['lemon',  'gem',    'crown',  'skull', 'lucky7'],
       ['grape',  'lemon',  'coin',   'gem',   'crown'],
     ], 20)
-    const effect: Effect = { type: 'score_multiply', value: 2, duration: 'next_spin', description: '2배' }
+    const effect: Effect = { type: 'score_multiply', value: 2, duration: 'permanent', description: '2배' }
     const result = calculateScore(grid, [effect])
     expect(result.total).toBe(120) // 60 × 2
   })
 
-  test('score_add 이펙트 적용', () => {
+  test('symbol_score_multiply + score_multiply 중첩', () => {
     const grid = makeGrid([
       ['cherry', 'cherry', 'cherry', 'grape', 'coin'],
       ['lemon',  'gem',    'crown',  'skull', 'lucky7'],
       ['grape',  'lemon',  'coin',   'gem',   'crown'],
     ], 20)
-    const effect: Effect = { type: 'score_add', value: 50, duration: 'permanent', description: '+50' }
-    const result = calculateScore(grid, [effect])
-    expect(result.total).toBe(110) // 60 + 50
+    const effects: Effect[] = [
+      { type: 'symbol_score_multiply', value: 2, duration: 'permanent', targetSymbol: 'cherry', description: 'cherry ×2' },
+      { type: 'score_multiply', value: 2, duration: 'permanent', description: '전체 ×2' },
+    ]
+    const result = calculateScore(grid, effects)
+    expect(result.total).toBe(240) // (20×2 × 3 × 1) × 2
   })
 })

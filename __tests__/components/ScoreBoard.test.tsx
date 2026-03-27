@@ -18,24 +18,48 @@ jest.mock('framer-motion', () => {
   }
 })
 
+jest.mock('@/store/gameStore', () => ({
+  useGameStore: (selector: (s: { spinId: number; scoreGain: number }) => unknown) =>
+    selector({ spinId: 0, scoreGain: 0 }),
+}))
+
+const DEFAULT_PROPS = {
+  score:           0,
+  roundScore:      0,
+  roundTarget:     1000,
+  spinsInRound:    0,
+  maxSpinsInRound: 7,
+  round:           1,
+}
+
 describe('ScoreBoard', () => {
-  test('점수를 포맷팅해서 표시', () => {
-    render(<ScoreBoard score={1500} spinsLeft={7} round={3} />)
-    expect(screen.getByText('1,500')).toBeInTheDocument()
+  test('라운드 점수 표시', () => {
+    render(<ScoreBoard {...DEFAULT_PROPS} roundScore={750} />)
+    expect(screen.getByText('750')).toBeInTheDocument()
   })
 
-  test('spinsLeft 표시', () => {
-    render(<ScoreBoard score={0} spinsLeft={5} round={1} />)
-    expect(screen.getByText('5')).toBeInTheDocument()
+  test('목표 점수 표시', () => {
+    render(<ScoreBoard {...DEFAULT_PROPS} roundTarget={2000} />)
+    expect(screen.getByText(/2,000/)).toBeInTheDocument()
   })
 
-  test('round 표시', () => {
-    render(<ScoreBoard score={0} spinsLeft={10} round={4} />)
-    expect(screen.getByText('4')).toBeInTheDocument()
+  test('남은 스핀 표시', () => {
+    render(<ScoreBoard {...DEFAULT_PROPS} spinsInRound={3} maxSpinsInRound={7} />)
+    expect(screen.getByText('4')).toBeInTheDocument() // 7 - 3 = 4
   })
 
-  test('score=0 일 때 0 표시', () => {
-    render(<ScoreBoard score={0} spinsLeft={10} round={1} />)
+  test('라운드 번호 표시', () => {
+    render(<ScoreBoard {...DEFAULT_PROPS} round={3} />)
+    expect(screen.getByText('3')).toBeInTheDocument()
+  })
+
+  test('총 누적 점수 표시', () => {
+    render(<ScoreBoard {...DEFAULT_PROPS} score={5000} />)
+    expect(screen.getByText(/5,000/)).toBeInTheDocument()
+  })
+
+  test('roundScore=0 일 때 0 표시', () => {
+    render(<ScoreBoard {...DEFAULT_PROPS} roundScore={0} />)
     expect(screen.getByText('0')).toBeInTheDocument()
   })
 })

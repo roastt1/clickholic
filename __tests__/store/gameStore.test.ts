@@ -2,7 +2,6 @@ import { useGameStore } from '@/store/gameStore'
 import type { GameState } from '@/types/game'
 import type { ItemCard } from '@/types/card'
 
-// 스토어를 각 테스트 전에 초기 상태로 리셋
 beforeEach(() => {
   useGameStore.getState().resetGame()
 })
@@ -16,8 +15,22 @@ describe('초기 상태', () => {
     expect(useGameStore.getState().score).toBe(0)
   })
 
-  test('spinsLeft는 10', () => {
-    expect(useGameStore.getState().spinsLeft).toBe(10)
+  test('roundScore는 0', () => {
+    expect(useGameStore.getState().roundScore).toBe(0)
+  })
+
+  test('spinsInRound는 0', () => {
+    expect(useGameStore.getState().spinsInRound).toBe(0)
+  })
+
+  test('roundTarget은 1000 (1라운드)', () => {
+    expect(useGameStore.getState().roundTarget).toBe(1000)
+  })
+
+  test('maxSpinsInRound는 5~10 범위', () => {
+    const max = useGameStore.getState().maxSpinsInRound
+    expect(max).toBeGreaterThanOrEqual(5)
+    expect(max).toBeLessThanOrEqual(10)
   })
 
   test('currentGrid는 null', () => {
@@ -26,11 +39,6 @@ describe('초기 상태', () => {
 })
 
 describe('spin()', () => {
-  test('spin 후 phase가 card_select로 전환', () => {
-    useGameStore.getState().spin()
-    expect(useGameStore.getState().phase).toBe('card_select')
-  })
-
   test('spin 후 currentGrid가 3×5 그리드', () => {
     useGameStore.getState().spin()
     const grid = useGameStore.getState().currentGrid
@@ -44,9 +52,9 @@ describe('spin()', () => {
     expect(typeof useGameStore.getState().score).toBe('number')
   })
 
-  test('spin 후 spinsLeft가 1 감소', () => {
+  test('spin 후 spinsInRound가 1 증가', () => {
     useGameStore.getState().spin()
-    expect(useGameStore.getState().spinsLeft).toBe(9)
+    expect(useGameStore.getState().spinsInRound).toBe(1)
   })
 
   test('spin 후 spinHistory에 1개 추가', () => {
@@ -55,78 +63,112 @@ describe('spin()', () => {
   })
 
   test('idle이 아닐 때 spin은 무시', () => {
-    useGameStore.getState().spin() // card_select 상태로 전환
+    // maxSpinsInRound를 1로 설정하면 첫 spin 직후 round_clear 혹은 game_over
+    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: 0 })
+    useGameStore.getState().spin() // round_clear 상태
     const scoreBefore = useGameStore.getState().score
     useGameStore.getState().spin() // 무시되어야 함
     expect(useGameStore.getState().score).toBe(scoreBefore)
   })
 
-  test('마지막 spin 후 phase가 game_over', () => {
-    // 9번 spin하여 spinsLeft=1 상태 만들기
-    for (let i = 0; i < 9; i++) {
-      useGameStore.setState({ phase: 'idle', spinsLeft: 10 - i })
-      useGameStore.getState().spin()
-    }
-    useGameStore.setState({ phase: 'idle', spinsLeft: 1 })
+  test('마지막 spin에서 목표 달성 시 round_clear', () => {
+    // maxSpinsInRound=1, roundTarget=0 → 항상 클리어
+    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: 0 })
+    useGameStore.getState().spin()
+    expect(useGameStore.getState().phase).toBe('round_clear')
+  })
+
+  test('마지막 spin에서 목표 미달 시 game_over', () => {
+    // maxSpinsInRound=1, roundTarget=매우 큰 수 → 항상 실패
+    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: 9_999_999 })
     useGameStore.getState().spin()
     expect(useGameStore.getState().phase).toBe('game_over')
   })
+
+  test('마지막 spin 전에는 idle 유지', () => {
+    useGameStore.setState({ maxSpinsInRound: 3, spinsInRound: 0, roundTarget: 0 })
+    useGameStore.getState().spin()
+    expect(useGameStore.getState().phase).toBe('idle')
+    useGameStore.getState().spin()
+    expect(useGameStore.getState().phase).toBe('idle')
+  })
 })
 
-describe('selectCard()', () => {
-  test('카드 적용 후 phase가 idle로 전환', () => {
-    useGameStore.getState().spin() // card_select 상태로 전환
+describe('selectItem()', () => {
+  function toRoundClear() {
+    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: 0 })
+    useGameStore.getState().spin()
+  }
 
-    const card: ItemCard = {
-      id: 'test-card',
-      name: '테스트 카드',
-      description: '점수 +100',
+  test('증강체 선택 후 phase가 idle로 전환', () => {
+    toRoundClear()
+
+    const item: ItemCard = {
+      id: 'test-item',
+      name: '테스트 증강체',
+      description: '효과 없음',
       rarity: 'common',
       cost: 0,
-      apply: (state: GameState) => ({ ...state, score: state.score + 100 }),
+      apply: (state: GameState) => state,
     }
 
-    useGameStore.getState().selectCard(card)
+    useGameStore.getState().selectItem(item)
     expect(useGameStore.getState().phase).toBe('idle')
   })
 
-  test('카드 효과가 score에 반영', () => {
-    useGameStore.getState().spin()
-    const scoreBefore = useGameStore.getState().score
+  test('증강체 선택 후 라운드 번호 증가', () => {
+    toRoundClear()
+    const roundBefore = useGameStore.getState().round
 
-    const card: ItemCard = {
-      id: 'score-card',
-      name: '점수 카드',
-      description: '+100',
+    const item: ItemCard = {
+      id: 'round-item',
+      name: '',
+      description: '',
       rarity: 'common',
       cost: 0,
-      apply: (state: GameState) => ({ ...state, score: state.score + 100 }),
+      apply: (state: GameState) => state,
     }
 
-    useGameStore.getState().selectCard(card)
-    expect(useGameStore.getState().score).toBe(scoreBefore + 100)
+    useGameStore.getState().selectItem(item)
+    expect(useGameStore.getState().round).toBe(roundBefore + 1)
   })
 
-  test('선택된 카드가 deck에 추가', () => {
-    useGameStore.getState().spin()
+  test('증강체 선택 후 roundScore가 0으로 리셋', () => {
+    toRoundClear()
 
-    const card: ItemCard = {
-      id: 'deck-card',
-      name: '덱 카드',
+    const item: ItemCard = {
+      id: 'reset-item',
+      name: '',
+      description: '',
+      rarity: 'common',
+      cost: 0,
+      apply: (state: GameState) => state,
+    }
+
+    useGameStore.getState().selectItem(item)
+    expect(useGameStore.getState().roundScore).toBe(0)
+  })
+
+  test('선택된 증강체가 deck에 추가', () => {
+    toRoundClear()
+
+    const item: ItemCard = {
+      id: 'deck-item',
+      name: '덱 테스트',
       description: '',
       rarity: 'rare',
       cost: 0,
       apply: (state: GameState) => state,
     }
 
-    useGameStore.getState().selectCard(card)
+    useGameStore.getState().selectItem(item)
     expect(useGameStore.getState().deck).toHaveLength(1)
-    expect(useGameStore.getState().deck[0].id).toBe('deck-card')
+    expect(useGameStore.getState().deck[0].id).toBe('deck-item')
   })
 
-  test('card_select가 아닐 때 selectCard는 무시', () => {
+  test('round_clear가 아닐 때 selectItem은 무시', () => {
     const deckBefore = useGameStore.getState().deck
-    const card: ItemCard = {
+    const item: ItemCard = {
       id: 'ignored',
       name: '',
       description: '',
@@ -134,7 +176,7 @@ describe('selectCard()', () => {
       cost: 0,
       apply: (state: GameState) => state,
     }
-    useGameStore.getState().selectCard(card)
+    useGameStore.getState().selectItem(item)
     expect(useGameStore.getState().deck).toEqual(deckBefore)
   })
 })
@@ -147,9 +189,12 @@ describe('resetGame()', () => {
     const state = useGameStore.getState()
     expect(state.phase).toBe('idle')
     expect(state.score).toBe(0)
-    expect(state.spinsLeft).toBe(10)
+    expect(state.roundScore).toBe(0)
+    expect(state.spinsInRound).toBe(0)
     expect(state.currentGrid).toBeNull()
     expect(state.deck).toHaveLength(0)
     expect(state.spinHistory).toHaveLength(0)
+    expect(state.round).toBe(1)
+    expect(state.roundTarget).toBe(1000)
   })
 })

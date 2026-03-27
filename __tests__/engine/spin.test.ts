@@ -37,6 +37,17 @@ describe('generateGrid', () => {
   test('빈 풀이면 에러', () => {
     expect(() => generateGrid([])).toThrow('symbolPool is empty')
   })
+
+  test('symbol_rate_up 효과로 특정 심볼 비율 증가', () => {
+    // cherry에 매우 높은 가중치를 주면 대부분 cherry로 채워짐
+    const effects = [
+      { type: 'symbol_rate_up' as const, value: 100, duration: 'permanent' as const, targetSymbol: 'cherry' as const, description: 'cherry 확률 ↑' },
+    ]
+    const grid = generateGrid(symbolPool, effects)
+    const cherryCount = grid.flat().filter((s) => s.type === 'cherry').length
+    // 매우 높은 가중치 → cherry가 절반 이상 차지해야 함
+    expect(cherryCount).toBeGreaterThan(7)
+  })
 })
 
 describe('executeSpin', () => {
@@ -46,22 +57,24 @@ describe('executeSpin', () => {
     result.symbols.forEach((row) => expect(row).toHaveLength(COLS))
   })
 
-  test('score는 0 이상 (그룹 없으면 0, 있으면 양수)', () => {
+  test('score는 0 이상', () => {
     const result = executeSpin(symbolPool, [])
     expect(result.score).toBeGreaterThanOrEqual(0)
   })
 
-  test('score_add 이펙트가 score에 반영', () => {
-    const effect = { type: 'score_add' as const, value: 500, duration: 'permanent' as const, description: '+500' }
-    const result = executeSpin(symbolPool, [effect])
-    expect(result.score).toBeGreaterThanOrEqual(500)
+  test('score_multiply 이펙트가 score에 반영', () => {
+    // 3개짜리 cherry 라인이 나올 수 있도록 단일 심볼 풀 사용
+    const singlePool: SlotSymbol[] = [makeSymbol('cherry')]
+    const effect = { type: 'score_multiply' as const, value: 2, duration: 'permanent' as const, description: '2배' }
+    const noEffect = executeSpin(singlePool, [])
+    const withEffect = executeSpin(singlePool, [effect])
+    // 배수 적용 버전은 기본 버전의 2배여야 함
+    expect(withEffect.score).toBe(noEffect.score * 2)
   })
 
-  test('bonuses에 score 관련 이펙트만 포함', () => {
-    const scoreEffect = { type: 'score_multiply' as const, value: 2, duration: 'next_spin' as const, description: '2배' }
-    const otherEffect = { type: 'deck_modify' as const, value: 1, duration: 'permanent' as const, description: 'deck' }
-    const result = executeSpin(symbolPool, [scoreEffect, otherEffect])
-    expect(result.bonuses).toHaveLength(1)
-    expect(result.bonuses[0].type).toBe('score_multiply')
+  test('bonuses에 score_multiply 이펙트 포함', () => {
+    const scoreEffect = { type: 'score_multiply' as const, value: 2, duration: 'permanent' as const, description: '2배' }
+    const result = executeSpin(symbolPool, [scoreEffect])
+    expect(result.bonuses.some((b) => b.type === 'score_multiply')).toBe(true)
   })
 })
