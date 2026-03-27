@@ -29,8 +29,8 @@ describe('SpinButton', () => {
     expect(screen.getByRole('button')).not.toBeDisabled()
   })
 
-  test('card_select 상태에서 버튼 비활성화', () => {
-    render(<SpinButton phase="card_select" onSpin={jest.fn()} />)
+  test('round_clear 상태에서 버튼 비활성화', () => {
+    render(<SpinButton phase="round_clear" onSpin={jest.fn()} />)
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
@@ -48,7 +48,7 @@ describe('SpinButton', () => {
 
   test('비활성 상태에서 클릭해도 onSpin 미호출', () => {
     const onSpin = jest.fn()
-    render(<SpinButton phase="card_select" onSpin={onSpin} />)
+    render(<SpinButton phase="round_clear" onSpin={onSpin} />)
     fireEvent.click(screen.getByRole('button'))
     expect(onSpin).not.toHaveBeenCalled()
   })
@@ -58,8 +58,8 @@ describe('SpinButton', () => {
     expect(screen.getByText('GAME OVER')).toBeInTheDocument()
   })
 
-  test('card_select 상태에서 ... 텍스트 표시', () => {
-    render(<SpinButton phase="card_select" onSpin={jest.fn()} />)
+  test('round_clear 상태에서 ... 텍스트 표시', () => {
+    render(<SpinButton phase="round_clear" onSpin={jest.fn()} />)
     expect(screen.getByText('...')).toBeInTheDocument()
   })
 })

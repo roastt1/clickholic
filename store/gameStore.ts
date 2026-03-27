@@ -4,16 +4,17 @@ import type { ItemCard } from '@/types/card'
 import type { SlotSymbol } from '@/types/symbol'
 import { executeSpin } from '@/lib/engine/spin'
 import { tickEffects } from '@/lib/engine/effects'
+import { calculateRoundTarget, getRandomSpinsInRound } from '@/lib/engine/round'
 import { SYMBOL_POOL } from '@/lib/data/symbols'
-import { CARD_POOL } from '@/lib/data/cards'
+import { AUGMENT_POOL } from '@/lib/data/cards'
 
 const STRIP_TYPES: SlotSymbol['type'][] = [
   'cherry', 'grape', 'lemon', 'coin', 'gem', 'crown', 'lucky7', 'skull',
 ]
 export const REEL_FAKE_COUNT = 22
 
-function pickOfferedCards(): ItemCard[] {
-  return [...CARD_POOL].sort(() => Math.random() - 0.5).slice(0, 3)
+function pickOfferedItems(): ItemCard[] {
+  return [...AUGMENT_POOL].sort(() => Math.random() - 0.5).slice(0, 3)
 }
 
 function makeSpinStrips(): SlotSymbol[][] {
@@ -25,26 +26,27 @@ function makeSpinStrips(): SlotSymbol[][] {
   )
 }
 
-const INITIAL_SPINS = 10
-
 const INITIAL_STATE: GameState = {
-  phase:        'idle',
-  score:        0,
-  spinsLeft:    INITIAL_SPINS,
-  deck:         [],
-  activeEffects:[],
-  currentGrid:  null,
-  spinHistory:  [],
-  round:        1,
-  offeredCards: [],
-  spinId:       0,
-  spinStrips:   null,
-  scoreGain:    0,
+  phase:           'idle',
+  score:           0,
+  roundScore:      0,
+  roundTarget:     calculateRoundTarget(1),
+  spinsInRound:    0,
+  maxSpinsInRound: getRandomSpinsInRound(),
+  deck:            [],
+  activeEffects:   [],
+  currentGrid:     null,
+  spinHistory:     [],
+  round:           1,
+  offeredItems:    [],
+  spinId:          0,
+  spinStrips:      null,
+  scoreGain:       0,
 }
 
 interface GameStore extends GameState {
   spin: () => void
-  selectCard: (card: ItemCard) => void
+  selectItem: (card: ItemCard) => void
   resetGame: () => void
 }
 
@@ -52,54 +54,70 @@ export const useGameStore = create<GameStore>((set, get) => ({
   ...INITIAL_STATE,
 
   spin: () => {
-    const { phase, spinsLeft, activeEffects, spinHistory, score, round, spinId } = get()
+    const {
+      phase, activeEffects, spinHistory, score,
+      roundScore, spinsInRound, maxSpinsInRound, roundTarget,
+      spinId,
+    } = get()
 
-    if (phase !== 'idle' || spinsLeft <= 0) return
+    if (phase !== 'idle') return
 
     set({ phase: 'spinning' })
 
-    const result          = executeSpin(SYMBOL_POOL, activeEffects)
+    const result           = executeSpin(SYMBOL_POOL, activeEffects)
     const remainingEffects = tickEffects(activeEffects)
-    const newSpinsLeft    = spinsLeft - 1
-    const newScore        = score + result.score
-    const nextPhase       = newSpinsLeft === 0 ? 'game_over' : 'card_select'
+    const newRoundScore    = roundScore + result.score
+    const newScore         = score + result.score
+    const newSpinsInRound  = spinsInRound + 1
+    const isLastSpin       = newSpinsInRound >= maxSpinsInRound
+
+    let nextPhase: GameState['phase']
+    if (isLastSpin) {
+      nextPhase = newRoundScore >= roundTarget ? 'round_clear' : 'game_over'
+    } else {
+      nextPhase = 'idle'
+    }
 
     set({
-      phase:          nextPhase,
-      currentGrid:    result.symbols,
-      score:          newScore,
-      spinsLeft:      newSpinsLeft,
-      activeEffects:  remainingEffects,
-      spinHistory:    [...spinHistory, result],
-      round:          round + 1,
-      offeredCards:   nextPhase === 'card_select' ? pickOfferedCards() : [],
-      spinId:         spinId + 1,
-      spinStrips:     makeSpinStrips(),
-      scoreGain:      result.score,
+      phase:         nextPhase,
+      currentGrid:   result.symbols,
+      score:         newScore,
+      roundScore:    newRoundScore,
+      spinsInRound:  newSpinsInRound,
+      activeEffects: remainingEffects,
+      spinHistory:   [...spinHistory, result],
+      offeredItems:  nextPhase === 'round_clear' ? pickOfferedItems() : [],
+      spinId:        spinId + 1,
+      spinStrips:    makeSpinStrips(),
+      scoreGain:     result.score,
     })
   },
 
-  selectCard: (card: ItemCard) => {
-    const { phase, score, spinsLeft, deck, activeEffects, currentGrid, spinHistory, round, offeredCards, spinId, spinStrips } = get()
+  selectItem: (card: ItemCard) => {
+    const state = get()
+    if (state.phase !== 'round_clear') return
 
-    if (phase !== 'card_select') return
-
-    const { scoreGain } = get()
-    const currentState: GameState = {
-      phase, score, spinsLeft, deck, activeEffects, currentGrid,
-      spinHistory, round, offeredCards, spinId, spinStrips, scoreGain,
-    }
-
-    const nextState = card.apply(currentState)
+    const nextRound = state.round + 1
+    const nextState = card.apply(state)
 
     set({
       ...nextState,
-      deck:  [...nextState.deck, card],
-      phase: 'idle',
+      deck:            [...nextState.deck, card],
+      phase:           'idle',
+      round:           nextRound,
+      roundScore:      0,
+      spinsInRound:    0,
+      maxSpinsInRound: getRandomSpinsInRound(),
+      roundTarget:     calculateRoundTarget(nextRound),
+      offeredItems:    [],
     })
   },
 
   resetGame: () => {
-    set({ ...INITIAL_STATE })
+    set({
+      ...INITIAL_STATE,
+      roundTarget:     calculateRoundTarget(1),
+      maxSpinsInRound: getRandomSpinsInRound(),
+    })
   },
 }))

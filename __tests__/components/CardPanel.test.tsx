@@ -19,54 +19,54 @@ jest.mock('framer-motion', () => {
   }
 })
 
-const MOCK_CARDS: ItemCard[] = [
-  { id: 'card-a', name: '추가 스핀', description: '스핀 +1', rarity: 'common',    apply: (s) => s },
-  { id: 'card-b', name: '황금 스핀', description: '점수 2배', rarity: 'rare',     apply: (s) => s },
-  { id: 'card-c', name: '보너스',   description: '+500점',   rarity: 'uncommon', apply: (s) => s },
+const MOCK_ITEMS: ItemCard[] = [
+  { id: 'item-a', name: '럭키 세븐 집착', description: '7️⃣ 출현 확률 +50%', rarity: 'rare',      cost: 0, apply: (s) => s },
+  { id: 'item-b', name: '황금 왕관',      description: '👑 점수 ×2',          rarity: 'rare',      cost: 0, apply: (s) => s },
+  { id: 'item-c', name: '코인 러시',      description: '🪙 출현 확률 +80%',   rarity: 'uncommon',  cost: 0, apply: (s) => s },
 ]
 
 jest.mock('@/store/gameStore', () => ({
-  useGameStore: (selector: (s: { offeredCards: ItemCard[] }) => unknown) =>
-    selector({ offeredCards: MOCK_CARDS }),
+  useGameStore: (selector: (s: { offeredItems: ItemCard[] }) => unknown) =>
+    selector({ offeredItems: MOCK_ITEMS }),
 }))
 
 describe('CardPanel', () => {
   test('visible=false 이면 아무것도 렌더링하지 않음', () => {
-    render(<CardPanel visible={false} onSelect={jest.fn()} />)
-    expect(screen.queryByText('선택하세요')).not.toBeInTheDocument()
+    render(<CardPanel visible={false} onSelect={jest.fn()} roundScore={500} roundTarget={1000} />)
+    expect(screen.queryByText('증강체를 선택하세요')).not.toBeInTheDocument()
   })
 
-  test('visible=true 이면 안내 텍스트 표시', () => {
-    render(<CardPanel visible={true} onSelect={jest.fn()} />)
-    expect(screen.getByText('선택하세요')).toBeInTheDocument()
+  test('visible=true 이면 라운드 클리어 메시지 표시', () => {
+    render(<CardPanel visible={true} onSelect={jest.fn()} roundScore={1200} roundTarget={1000} />)
+    expect(screen.getByText('Round Clear!')).toBeInTheDocument()
   })
 
-  test('visible=true 이면 카드 버튼 3개 렌더링', () => {
-    render(<CardPanel visible={true} onSelect={jest.fn()} />)
+  test('visible=true 이면 증강체 버튼 3개 렌더링', () => {
+    render(<CardPanel visible={true} onSelect={jest.fn()} roundScore={1200} roundTarget={1000} />)
     expect(screen.getAllByRole('button')).toHaveLength(3)
   })
 
-  test('카드 클릭 시 onSelect 1회 호출', () => {
+  test('증강체 클릭 시 onSelect 1회 호출', () => {
     const onSelect = jest.fn()
-    render(<CardPanel visible={true} onSelect={onSelect} />)
+    render(<CardPanel visible={true} onSelect={onSelect} roundScore={1200} roundTarget={1000} />)
     fireEvent.click(screen.getAllByRole('button')[0])
     expect(onSelect).toHaveBeenCalledTimes(1)
   })
 
   test('onSelect에 id를 가진 카드 객체 전달', () => {
     const onSelect = jest.fn()
-    render(<CardPanel visible={true} onSelect={onSelect} />)
+    render(<CardPanel visible={true} onSelect={onSelect} roundScore={1200} roundTarget={1000} />)
     fireEvent.click(screen.getAllByRole('button')[0])
     expect(onSelect).toHaveBeenCalledWith(
       expect.objectContaining({ id: expect.any(String) }),
     )
   })
 
-  test('visible이 false→true로 바뀌면 새 카드 3장 표시', () => {
-    const { rerender } = render(<CardPanel visible={false} onSelect={jest.fn()} />)
+  test('visible이 false→true로 바뀌면 증강체 3개 표시', () => {
+    const { rerender } = render(<CardPanel visible={false} onSelect={jest.fn()} roundScore={0} roundTarget={1000} />)
     expect(screen.queryAllByRole('button')).toHaveLength(0)
 
-    rerender(<CardPanel visible={true} onSelect={jest.fn()} />)
+    rerender(<CardPanel visible={true} onSelect={jest.fn()} roundScore={1200} roundTarget={1000} />)
     expect(screen.getAllByRole('button')).toHaveLength(3)
   })
 })
