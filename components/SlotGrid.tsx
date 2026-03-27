@@ -27,6 +27,7 @@ interface SlotGridProps {
 export function SlotGrid({ grid }: SlotGridProps) {
   const spinId     = useGameStore((s) => s.spinId)
   const spinStrips = useGameStore((s) => s.spinStrips)
+  const finishSpin = useGameStore((s) => s.finishSpin)
 
   const highlightedPositions = useMemo(() => {
     if (!grid) return new Set<string>()
@@ -82,6 +83,7 @@ export function SlotGrid({ grid }: SlotGridProps) {
             highlighted={highlighted}
             columnIndex={colIdx}
             spinId={spinId}
+            onSpinComplete={colIdx === 4 ? finishSpin : undefined}
           />
         )
       })}

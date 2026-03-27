@@ -33,6 +33,7 @@ interface ReelColumnProps {
     highlighted: boolean[]; // [row0, row1, row2] 하이라이트 여부
     columnIndex: number; // 0–4: 스태거 기준
     spinId: number; // 스핀마다 증가 → 애니메이션 트리거
+    onSpinComplete?: () => void; // 애니메이션 완료 콜백 (마지막 열에서만 사용)
 }
 
 export const ReelColumn = memo(function ReelColumn({
@@ -41,6 +42,7 @@ export const ReelColumn = memo(function ReelColumn({
     highlighted,
     columnIndex,
     spinId,
+    onSpinComplete,
 }: ReelColumnProps) {
     const controls = useAnimation();
     const visibleH = 3 * CELL + 2 * GAP; // 184px
@@ -71,7 +73,8 @@ export const ReelColumn = memo(function ReelColumn({
                         restDelta: 0.5,
                     },
                 }),
-            );
+            )
+            .then(() => onSpinComplete?.());
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [spinId]);
 
