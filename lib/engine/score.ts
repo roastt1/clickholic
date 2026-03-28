@@ -20,7 +20,7 @@ function getLineMultiplier(size: number): number {
  * symbol_score_multiply 효과에서 특정 심볼의 점수 배수 계산
  * 같은 심볼에 여러 배수가 있으면 곱셈 적용
  */
-function getSymbolScoreMultiplier(type: SymbolType, effects: Effect[]): number {
+export function getSymbolScoreMultiplier(type: SymbolType, effects: Effect[]): number {
   return effects
     .filter((e) => e.type === 'symbol_score_multiply' && e.targetSymbol === type)
     .reduce((acc, e) => acc * e.value, 1)
