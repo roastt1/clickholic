@@ -38,9 +38,9 @@ function makeGrid(types: SlotSymbol['type'][][]): SlotSymbol[][] {
 }
 
 const TEST_GRID = makeGrid([
-  ['cherry', 'grape',  'lemon',  'coin',  'gem'],
+  ['cherry', 'clover',  'lemon',  'coin',  'gem'],
   ['crown',  'lucky7', 'skull',  'lemon', 'cherry'],
-  ['grape',  'lemon',  'cherry', 'coin',  'gem'],
+  ['clover',  'lemon',  'cherry', 'coin',  'gem'],
 ])
 
 describe('SlotGrid', () => {

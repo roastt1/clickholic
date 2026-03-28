@@ -18,9 +18,9 @@ export interface GameState {
   phase: GamePhase
   score: number           // 전체 누적 점수 (모든 라운드 합산)
   roundScore: number      // 현재 라운드 누적 점수 (라운드 초기화 시 리셋)
-  roundTarget: number     // 현재 라운드 목표 점수
+  roundTarget: number     // 이 라운드까지의 누적 목표 점수 (score와 비교해 클리어 판정)
   spinsInRound: number    // 현재 라운드 사용한 스핀 수
-  maxSpinsInRound: number // 현재 라운드 최대 스핀 수 (5~10 랜덤)
+  maxSpinsInRound: number // 현재 라운드 최대 스핀 수 (고정)
   deck: ItemCard[]        // 획득한 증강체 목록
   activeEffects: Effect[]
   currentGrid: SlotSymbol[][] | null

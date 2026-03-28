@@ -25,7 +25,6 @@ jest.mock('@/store/gameStore', () => ({
 
 const DEFAULT_PROPS = {
   score:           0,
-  roundScore:      0,
   roundTarget:     1000,
   spinsInRound:    0,
   maxSpinsInRound: 7,
@@ -33,12 +32,12 @@ const DEFAULT_PROPS = {
 }
 
 describe('ScoreBoard', () => {
-  test('라운드 점수 표시', () => {
-    render(<ScoreBoard {...DEFAULT_PROPS} roundScore={750} />)
+  test('누적 점수 표시 (10의 자리 반올림)', () => {
+    render(<ScoreBoard {...DEFAULT_PROPS} score={750} />)
     expect(screen.getByText('750')).toBeInTheDocument()
   })
 
-  test('목표 점수 표시', () => {
+  test('목표 점수 표시 (10의 자리 반올림)', () => {
     render(<ScoreBoard {...DEFAULT_PROPS} roundTarget={2000} />)
     expect(screen.getByText(/2,000/)).toBeInTheDocument()
   })
@@ -53,13 +52,8 @@ describe('ScoreBoard', () => {
     expect(screen.getByText('3')).toBeInTheDocument()
   })
 
-  test('총 누적 점수 표시', () => {
-    render(<ScoreBoard {...DEFAULT_PROPS} score={5000} />)
-    expect(screen.getByText(/5,000/)).toBeInTheDocument()
-  })
-
-  test('roundScore=0 일 때 0 표시', () => {
-    render(<ScoreBoard {...DEFAULT_PROPS} roundScore={0} />)
+  test('score=0 일 때 0 표시', () => {
+    render(<ScoreBoard {...DEFAULT_PROPS} score={0} />)
     expect(screen.getByText('0')).toBeInTheDocument()
   })
 })

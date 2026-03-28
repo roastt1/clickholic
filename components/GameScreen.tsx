@@ -60,7 +60,6 @@ export function GameScreen() {
         {/* ── Scoreboard ────────────────────────────────── */}
         <ScoreBoard
           score={score}
-          roundScore={roundScore}
           roundTarget={roundTarget}
           spinsInRound={spinsInRound}
           maxSpinsInRound={maxSpinsInRound}
@@ -97,7 +96,7 @@ export function GameScreen() {
                 className="text-[11px] tabular-nums"
                 style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-space-mono)' }}
               >
-                목표 {roundTarget.toLocaleString()} pts / 달성 {roundScore.toLocaleString()} pts
+                목표 {Math.round(roundTarget / 10) * 10} pts / 달성 {score.toLocaleString()} pts
               </p>
               <p
                 className="text-5xl font-black tabular-nums neon-gold"

@@ -20,7 +20,7 @@ const SYMBOL_DISPLAY: Record<SlotSymbol["type"], { emoji: string; neon: string }
     skull: { emoji: "💀", neon: "#6b7280" },
     lemon: { emoji: "🍋", neon: "#eab308" },
     cherry: { emoji: "🍒", neon: "#ff2d78" },
-    grape: { emoji: "🍇", neon: "#a855f7" },
+    clover: { emoji: "🍀", neon: "#22c55e" },
     coin: { emoji: "💴", neon: "#f59e0b" },
     gem: { emoji: "💎", neon: "#00e5ff" },
     crown: { emoji: "👑", neon: "#fbbf24" },

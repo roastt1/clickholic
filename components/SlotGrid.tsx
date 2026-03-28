@@ -8,7 +8,7 @@ import { ReelColumn } from './ReelColumn'
 
 // grid=null일 때 표시할 정적 더미 스트립 (Math.random 없이 결정론적으로 생성)
 const FALLBACK_TYPES: SlotSymbol['type'][] = [
-  'cherry', 'grape', 'lemon', 'coin', 'gem', 'crown', 'lucky7', 'skull',
+  'cherry', 'clover', 'lemon', 'coin', 'gem', 'crown', 'lucky7', 'skull',
 ]
 const FALLBACK_STRIPS: SlotSymbol[][] = Array.from({ length: 5 }, (_, col) =>
   Array.from({ length: REEL_FAKE_COUNT }, (_, i) => ({
