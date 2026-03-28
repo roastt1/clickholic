@@ -7,9 +7,9 @@ import { useGameStore } from '@/store/gameStore'
 // 가장 늦게 멈추는 릴(4열) 종료 예상 시각 + 여유
 const SCORE_REVEAL_DELAY = 1850  // ms
 
+
 interface ScoreBoardProps {
   score:           number
-  roundScore:      number
   roundTarget:     number
   spinsInRound:    number
   maxSpinsInRound: number
@@ -18,7 +18,6 @@ interface ScoreBoardProps {
 
 export function ScoreBoard({
   score,
-  roundScore,
   roundTarget,
   spinsInRound,
   maxSpinsInRound,
@@ -27,8 +26,8 @@ export function ScoreBoard({
   const spinId    = useGameStore((s) => s.spinId)
   const scoreGain = useGameStore((s) => s.scoreGain)
 
-  const [displayRoundScore, setDisplayRoundScore] = useState(roundScore)
-  const [flashGain,         setFlashGain]         = useState(0)
+  const [displayScore, setDisplayScore] = useState(score)
+  const [flashGain,    setFlashGain]    = useState(0)
 
   const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const hideTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -39,14 +38,14 @@ export function ScoreBoard({
 
     if (spinId === 0) {
       revealTimer.current = setTimeout(() => {
-        setDisplayRoundScore(0)
+        setDisplayScore(0)
         setFlashGain(0)
       }, 0)
       return () => { if (revealTimer.current) clearTimeout(revealTimer.current) }
     }
 
     revealTimer.current = setTimeout(() => {
-      setDisplayRoundScore(roundScore)
+      setDisplayScore(score)
       if (scoreGain > 0) {
         setFlashGain(scoreGain)
         hideTimer.current = setTimeout(() => setFlashGain(0), 1600)
@@ -60,7 +59,7 @@ export function ScoreBoard({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spinId])
 
-  const progressPct = Math.min(100, Math.floor((displayRoundScore / roundTarget) * 100))
+  const progressPct = Math.min(100, Math.floor((displayScore / roundTarget) * 100))
   const spinsLeft   = maxSpinsInRound - spinsInRound
 
   return (
@@ -75,22 +74,22 @@ export function ScoreBoard({
             className="text-[10px] tracking-[0.25em] uppercase"
             style={{ color: 'var(--text-muted)' }}
           >
-            Round Score
+            Score
           </span>
           <div className="flex items-baseline gap-2">
             <AnimatePresence mode="wait">
               <motion.span
-                key={displayRoundScore}
+                key={displayScore}
                 className="text-2xl sm:text-3xl font-bold tabular-nums neon-cyan"
                 initial={{ y: -10, opacity: 0, scale: 0.92 }}
                 animate={{ y: 0,   opacity: 1, scale: 1    }}
                 transition={{ type: 'spring', stiffness: 360, damping: 22 }}
               >
-                {displayRoundScore.toLocaleString()}
+                {displayScore.toLocaleString()}
               </motion.span>
             </AnimatePresence>
             <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              / {roundTarget.toLocaleString()}
+              / {(Math.round(roundTarget / 10) * 10).toLocaleString()}
             </span>
             {/* +N 플래시 */}
             <AnimatePresence>
@@ -164,15 +163,6 @@ export function ScoreBoard({
         />
       </div>
 
-      {/* 하단: 총 누적 점수 (작게) */}
-      <div className="flex justify-end">
-        <span
-          className="text-[10px] tabular-nums"
-          style={{ color: 'var(--text-muted)' }}
-        >
-          Total: {score.toLocaleString()}
-        </span>
-      </div>
     </div>
   )
 }

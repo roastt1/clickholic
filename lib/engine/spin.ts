@@ -23,7 +23,7 @@ function buildWeightedPool(
       .filter((e) => e.targetSymbol === symbol.type)
       .reduce((acc, e) => acc + e.value, 0)
 
-    const weight = 1 + bonus
+    const weight = (symbol.weight ?? 1) + bonus
     if (weight <= 0) continue // 확률 0 이하 → 풀에서 제거
 
     // 가중치를 소수점 첫째 자리 단위로 반올림 후 정수 개수로 변환

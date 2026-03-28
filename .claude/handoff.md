@@ -52,3 +52,47 @@ effort: high
 - coverage: true
 - only: all
 - loop: 3
+
+---
+
+# Handoff Document (추가)
+생성일시: 2026-03-29 KST
+effort: high
+
+## 1. 완료한 작업
+- 심볼 밸런스 조정: lemon/cherry=2pt, clover/coin=3pt, gem/crown=5pt, lucky7=7pt, skull=-10pt
+- grape 심볼을 clover(🍀)로 교체 (타입, ID, 이모지, 색상 전체 변경)
+- 심볼 출현 가중치 도입: 같은 groupValue끼리 동일 weight, lucky7=7%, skull=3%
+- 라운드 스핀 횟수 고정: 랜덤(5~10) → 고정 7회
+- 라운드 목표점수 재조정: 누적 합산 방식으로 변경 (R1=20, R2=52, R3=103...)
+- 점수 누적 방식: roundScore 판정 → score(총 누적) 판정으로 변경
+- 점수 표시: 내 점수 = 그대로, 목표 점수만 10의 자리 반올림
+
+## 2. 변경 파일 요약
+| 파일 | 변경 유형 | 설명 |
+|------|----------|------|
+| types/symbol.ts | 수정 | grape→clover, weight? 필드 추가 |
+| types/game.ts | 수정 | roundTarget 주석 업데이트 |
+| lib/data/symbols.ts | 수정 | groupValue 재조정, weight 추가, grape→clover |
+| lib/data/cards.ts | 수정 | grape 카드 2개 → clover로 교체 |
+| lib/engine/round.ts | 수정 | 누적 목표점수 공식, 고정 스핀 7회, getSpinsInRound |
+| lib/engine/spin.ts | 수정 | buildWeightedPool이 symbol.weight 사용 |
+| lib/engine/odds.ts | 수정 | calculateSymbolOdds도 symbol.weight 사용 |
+| store/gameStore.ts | 수정 | 클리어 판정 newScore 기준, getSpinsInRound |
+| components/ScoreBoard.tsx | 수정 | score 표시, 목표만 반올림, 라벨 "Score" |
+| components/GameScreen.tsx | 수정 | game_over 표시 수정 |
+| components/CardPanel.tsx | 수정 | 목표점수만 반올림 |
+| components/SymbolCell/ReelColumn/SlotGrid/SymbolOddsPanel | 수정 | grape→clover |
+
+## 5. 주의사항
+- calculateRoundTarget(round)이 누적 합산 반환 (per-round 아님)
+- getSpinsInRound() 이름 변경 (getRandomSpinsInRound 삭제)
+- SlotSymbol.weight optional — 미지정 시 1.0 fallback
+- ScoreBoard가 roundScore prop을 더 이상 받지 않음
+
+## 6. 검증 권장 설정
+- effort: high
+- security: false
+- coverage: true
+- only: all
+- loop: 3

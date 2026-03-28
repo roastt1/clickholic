@@ -13,7 +13,7 @@ const SYMBOL_META: Record<SymbolType, { emoji: string; label: string; neon: stri
     skull: { emoji: "💀", label: "Skull", neon: "#6b7280" },
     lemon: { emoji: "🍋", label: "Lemon", neon: "#eab308" },
     cherry: { emoji: "🍒", label: "Cherry", neon: "#ff2d78" },
-    grape: { emoji: "🍇", label: "Grape", neon: "#a855f7" },
+    clover: { emoji: "🍀", label: "Clover", neon: "#22c55e" },
     coin: { emoji: "💴", label: "Coin", neon: "#f59e0b" },
     gem: { emoji: "💎", label: "Gem", neon: "#00e5ff" },
     crown: { emoji: "👑", label: "Crown", neon: "#fbbf24" },

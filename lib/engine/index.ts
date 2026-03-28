@@ -8,6 +8,6 @@ export { tickEffects, addEffect, filterEffectsByType } from './effects'
 
 export { generateGrid, executeSpin } from './spin'
 
-export { calculateRoundTarget, getRandomSpinsInRound } from './round'
+export { calculateRoundTarget, getSpinsInRound, SPINS_PER_ROUND } from './round'
 
 export { calculateSymbolOdds } from './odds'
