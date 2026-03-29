@@ -8,7 +8,7 @@ function makeSymbol(type: SlotSymbol['type']): SlotSymbol {
 
 const symbolPool: SlotSymbol[] = [
   makeSymbol('cherry'),
-  makeSymbol('grape'),
+  makeSymbol('clover'),
   makeSymbol('lemon'),
 ]
 

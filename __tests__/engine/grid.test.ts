@@ -20,9 +20,9 @@ function makeGrid(types: string[][]): SlotSymbol[][] {
 
 describe('getAdjacentSymbols', () => {
   const grid = makeGrid([
-    ['cherry', 'grape',  'lemon',  'coin',  'gem'],
+    ['cherry', 'clover',  'lemon',  'coin',  'gem'],
     ['crown',  'lucky7', 'skull',  'lemon', 'cherry'],
-    ['grape',  'lemon',  'cherry', 'coin',  'gem'],
+    ['clover',  'lemon',  'cherry', 'coin',  'gem'],
   ])
 
   test('중앙 셀은 4개 인접 심볼 반환', () => {
@@ -44,9 +44,9 @@ describe('getAdjacentSymbols', () => {
 describe('findLines', () => {
   test('가로 3개 직선 탐지', () => {
     const grid = makeGrid([
-      ['cherry', 'cherry', 'cherry', 'grape', 'coin'],
+      ['cherry', 'cherry', 'cherry', 'clover', 'coin'],
       ['lemon',  'gem',    'crown',  'skull', 'lucky7'],
-      ['grape',  'lemon',  'coin',   'gem',   'crown'],
+      ['clover',  'lemon',  'coin',   'gem',   'crown'],
     ])
     const lines = findLines(grid)
     expect(lines).toHaveLength(1)
@@ -58,7 +58,7 @@ describe('findLines', () => {
     const grid = makeGrid([
       ['cherry', 'cherry', 'cherry', 'cherry', 'coin'],
       ['lemon',  'gem',    'crown',  'skull',  'lucky7'],
-      ['grape',  'lemon',  'coin',   'gem',    'crown'],
+      ['clover',  'lemon',  'coin',   'gem',    'crown'],
     ])
     const lines = findLines(grid)
     expect(lines).toHaveLength(1)
@@ -70,7 +70,7 @@ describe('findLines', () => {
     const grid = makeGrid([
       ['cherry', 'cherry', 'cherry', 'cherry', 'cherry'],
       ['lemon',  'gem',    'crown',  'skull',  'lucky7'],
-      ['grape',  'lemon',  'coin',   'gem',    'crown'],
+      ['clover',  'lemon',  'coin',   'gem',    'crown'],
     ])
     const lines = findLines(grid)
     expect(lines).toHaveLength(1)
@@ -79,7 +79,7 @@ describe('findLines', () => {
 
   test('세로 3개 직선 탐지', () => {
     const grid = makeGrid([
-      ['cherry', 'grape', 'lemon', 'coin', 'gem'],
+      ['cherry', 'clover', 'lemon', 'coin', 'gem'],
       ['cherry', 'gem',   'crown', 'skull', 'lucky7'],
       ['cherry', 'lemon', 'coin',  'gem',   'crown'],
     ])
@@ -91,9 +91,9 @@ describe('findLines', () => {
 
   test('대각선(↘) 3개 직선 탐지', () => {
     const grid = makeGrid([
-      ['cherry', 'grape', 'lemon', 'coin', 'gem'],
+      ['cherry', 'clover', 'lemon', 'coin', 'gem'],
       ['lemon',  'cherry', 'crown', 'skull', 'lucky7'],
-      ['grape',  'lemon',  'cherry', 'gem',  'crown'],
+      ['clover',  'lemon',  'cherry', 'gem',  'crown'],
     ])
     const lines = findLines(grid)
     expect(lines).toHaveLength(1)
@@ -103,7 +103,7 @@ describe('findLines', () => {
 
   test('대각선(↙) 3개 직선 탐지', () => {
     const grid = makeGrid([
-      ['grape',  'lemon', 'cherry', 'coin', 'gem'],
+      ['clover',  'lemon', 'cherry', 'coin', 'gem'],
       ['lemon',  'cherry', 'crown', 'skull', 'lucky7'],
       ['cherry', 'lemon',  'coin',  'gem',   'crown'],
     ])
@@ -115,9 +115,9 @@ describe('findLines', () => {
 
   test('2개 직선은 탐지하지 않음', () => {
     const grid = makeGrid([
-      ['cherry', 'cherry', 'grape',  'lemon', 'coin'],
+      ['cherry', 'cherry', 'clover',  'lemon', 'coin'],
       ['gem',    'crown',  'lucky7', 'skull', 'lemon'],
-      ['grape',  'lemon',  'cherry', 'coin',  'gem'],
+      ['clover',  'lemon',  'cherry', 'coin',  'gem'],
     ])
     const lines = findLines(grid)
     expect(lines).toHaveLength(0)
@@ -125,21 +125,21 @@ describe('findLines', () => {
 
   test('독립된 두 가로 직선 각각 탐지', () => {
     const grid = makeGrid([
-      ['cherry', 'cherry', 'cherry', 'grape', 'grape'],
+      ['cherry', 'cherry', 'cherry', 'clover', 'clover'],
       ['lemon',  'coin',   'gem',    'crown', 'skull'],
-      ['grape',  'grape',  'grape',  'coin',  'gem'],
+      ['clover',  'clover',  'clover',  'coin',  'gem'],
     ])
     const lines = findLines(grid)
     expect(lines).toHaveLength(2)
     const types = lines.map((l) => l.type).sort()
-    expect(types).toEqual(['cherry', 'grape'])
+    expect(types).toEqual(['cherry', 'clover'])
   })
 
   test('excludedCells가 있으면 해당 셀 제외 후 탐지', () => {
     const grid = makeGrid([
-      ['cherry', 'cherry', 'cherry', 'grape', 'coin'],
+      ['cherry', 'cherry', 'cherry', 'clover', 'coin'],
       ['lemon',  'gem',    'crown',  'skull', 'lucky7'],
-      ['grape',  'lemon',  'coin',   'gem',   'crown'],
+      ['clover',  'lemon',  'coin',   'gem',   'crown'],
     ])
     const excluded = new Set(['0,0', '0,1', '0,2'])
     const lines = findLines(grid, excluded)
@@ -151,9 +151,9 @@ describe('detectVShapes', () => {
   test('V자(∨) 패턴 탐지', () => {
     // (0,0)(1,1)(2,2)(1,3)(0,4) 모두 cherry
     const grid = makeGrid([
-      ['cherry', 'lemon',  'grape', 'coin',   'cherry'],
-      ['grape',  'cherry', 'coin',  'cherry', 'lemon'],
-      ['lemon',  'coin',   'cherry','grape',  'gem'],
+      ['cherry', 'lemon',  'clover', 'coin',   'cherry'],
+      ['clover',  'cherry', 'coin',  'cherry', 'lemon'],
+      ['lemon',  'coin',   'cherry','clover',  'gem'],
     ])
     const vShapes = detectVShapes(grid)
     expect(vShapes).toHaveLength(1)
@@ -162,22 +162,22 @@ describe('detectVShapes', () => {
   })
 
   test('역V자(∧) 패턴 탐지', () => {
-    // (2,0)(1,1)(0,2)(1,3)(2,4) 모두 grape
+    // (2,0)(1,1)(0,2)(1,3)(2,4) 모두 clover
     const grid = makeGrid([
-      ['lemon',  'coin',  'grape', 'cherry',  'lemon'],
-      ['coin',   'grape', 'lemon', 'grape',   'coin'],
-      ['grape',  'lemon', 'coin',  'cherry',  'grape'],
+      ['lemon',  'coin',  'clover', 'cherry',  'lemon'],
+      ['coin',   'clover', 'lemon', 'clover',   'coin'],
+      ['clover',  'lemon', 'coin',  'cherry',  'clover'],
     ])
     const vShapes = detectVShapes(grid)
     expect(vShapes).toHaveLength(1)
-    expect(vShapes[0].type).toBe('grape')
+    expect(vShapes[0].type).toBe('clover')
   })
 
   test('V자 패턴 없으면 빈 배열 반환', () => {
     const grid = makeGrid([
-      ['cherry', 'grape',  'lemon', 'coin',  'gem'],
+      ['cherry', 'clover',  'lemon', 'coin',  'gem'],
       ['crown',  'lucky7', 'skull', 'lemon', 'cherry'],
-      ['grape',  'lemon',  'coin',  'gem',   'crown'],
+      ['clover',  'lemon',  'coin',  'gem',   'crown'],
     ])
     expect(detectVShapes(grid)).toHaveLength(0)
   })

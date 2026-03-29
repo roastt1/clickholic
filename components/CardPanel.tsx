@@ -67,7 +67,7 @@ export function CardPanel({ visible, onSelect, roundScore, roundTarget }: CardPa
                 className="text-[11px] tabular-nums"
                 style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-space-mono)' }}
               >
-                {roundScore.toLocaleString()} / {roundTarget.toLocaleString()} pts
+                {roundScore.toLocaleString()} / {Math.round(roundTarget / 10) * 10} pts
               </p>
             </div>
 

@@ -23,14 +23,12 @@ describe('초기 상태', () => {
     expect(useGameStore.getState().spinsInRound).toBe(0)
   })
 
-  test('roundTarget은 1000 (1라운드)', () => {
-    expect(useGameStore.getState().roundTarget).toBe(1000)
+  test('roundTarget은 20 (1라운드)', () => {
+    expect(useGameStore.getState().roundTarget).toBe(20)
   })
 
-  test('maxSpinsInRound는 5~10 범위', () => {
-    const max = useGameStore.getState().maxSpinsInRound
-    expect(max).toBeGreaterThanOrEqual(5)
-    expect(max).toBeLessThanOrEqual(10)
+  test('maxSpinsInRound는 7 (고정)', () => {
+    expect(useGameStore.getState().maxSpinsInRound).toBe(7)
   })
 
   test('currentGrid는 null', () => {
@@ -64,7 +62,7 @@ describe('spin()', () => {
 
   test('idle이 아닐 때 spin은 무시', () => {
     // maxSpinsInRound를 1로 설정하면 첫 spin 직후 round_clear 혹은 game_over
-    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: 0 })
+    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: -9999 })
     useGameStore.getState().spin() // round_clear 상태
     const scoreBefore = useGameStore.getState().score
     useGameStore.getState().spin() // 무시되어야 함
@@ -73,7 +71,7 @@ describe('spin()', () => {
 
   test('마지막 spin에서 목표 달성 시 round_clear', () => {
     // maxSpinsInRound=1, roundTarget=0 → 항상 클리어
-    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: 0 })
+    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: -9999 })
     useGameStore.getState().spin()
     expect(useGameStore.getState().phase).toBe('round_clear')
   })
@@ -86,7 +84,7 @@ describe('spin()', () => {
   })
 
   test('마지막 spin 전에는 idle 유지', () => {
-    useGameStore.setState({ maxSpinsInRound: 3, spinsInRound: 0, roundTarget: 0 })
+    useGameStore.setState({ maxSpinsInRound: 3, spinsInRound: 0, roundTarget: -9999 })
     useGameStore.getState().spin()
     expect(useGameStore.getState().phase).toBe('idle')
     useGameStore.getState().spin()
@@ -96,7 +94,7 @@ describe('spin()', () => {
 
 describe('selectItem()', () => {
   function toRoundClear() {
-    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: 0 })
+    useGameStore.setState({ maxSpinsInRound: 1, roundTarget: -9999 })
     useGameStore.getState().spin()
   }
 
@@ -195,6 +193,6 @@ describe('resetGame()', () => {
     expect(state.deck).toHaveLength(0)
     expect(state.spinHistory).toHaveLength(0)
     expect(state.round).toBe(1)
-    expect(state.roundTarget).toBe(1000)
+    expect(state.roundTarget).toBe(20)
   })
 })

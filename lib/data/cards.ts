@@ -59,16 +59,16 @@ export const AUGMENT_POOL: ItemCard[] = [
     }),
   },
   {
-    id: 'grape-rate',
-    name: '포도 농장',
-    description: '🍇 출현 확률 +90%',
+    id: 'clover-rate',
+    name: '클로버 농장',
+    description: '🍀 출현 확률 +90%',
     rarity: 'common',
     cost: 0,
     apply: (state) => ({
       ...state,
       activeEffects: [
         ...state.activeEffects,
-        { type: 'symbol_rate_up', value: 0.9, duration: 'permanent', targetSymbol: 'grape', description: '🍇 출현 확률 +90%' },
+        { type: 'symbol_rate_up', value: 0.9, duration: 'permanent', targetSymbol: 'clover', description: '🍀 출현 확률 +90%' },
       ],
     }),
   },
@@ -159,16 +159,16 @@ export const AUGMENT_POOL: ItemCard[] = [
     }),
   },
   {
-    id: 'grape-score',
-    name: '포도주 숙성',
-    description: '🍇 점수 ×2',
+    id: 'clover-score',
+    name: '클로버 행운',
+    description: '🍀 점수 ×2',
     rarity: 'uncommon',
     cost: 0,
     apply: (state) => ({
       ...state,
       activeEffects: [
         ...state.activeEffects,
-        { type: 'symbol_score_multiply', value: 2, duration: 'permanent', targetSymbol: 'grape', description: '🍇 점수 ×2' },
+        { type: 'symbol_score_multiply', value: 2, duration: 'permanent', targetSymbol: 'clover', description: '🍀 점수 ×2' },
       ],
     }),
   },

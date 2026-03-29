@@ -2,7 +2,7 @@ export type SymbolType =
   | 'skull'
   | 'lemon'
   | 'cherry'
-  | 'grape'
+  | 'clover'
   | 'coin'
   | 'gem'
   | 'crown'
@@ -22,5 +22,6 @@ export interface SlotSymbol {
   type: SymbolType
   tier: SymbolTier
   groupValue: number          // 연결 그룹에 포함될 때만 적용 (음수 가능)
+  weight?: number             // 기본 출현 가중치 (미지정 시 1.0)
   interactions?: SymbolInteraction[]
 }

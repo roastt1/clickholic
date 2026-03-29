@@ -21,7 +21,7 @@ export function calculateSymbolOdds(
       .filter((e) => e.targetSymbol === symbol.type)
       .reduce((acc, e) => acc + e.value, 0)
 
-    const weight = 1 + bonus
+    const weight = (symbol.weight ?? 1) + bonus
     const count  = weight <= 0 ? 0 : Math.max(1, Math.round(weight * 10))
 
     return { type: symbol.type, count }
