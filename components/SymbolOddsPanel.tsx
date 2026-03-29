@@ -20,8 +20,6 @@ const SYMBOL_META: Record<SymbolType, { emoji: string; label: string; neon: stri
     lucky7: { emoji: "7️⃣", label: "Lucky7", neon: "#00ff88" },
 };
 
-const BASE_PCT = (1 / 8) * 100;
-
 // 심볼 기본 점수 맵
 const BASE_SCORE: Record<SymbolType, number> = Object.fromEntries(
     SYMBOL_POOL.map((s) => [s.type, s.groupValue]),
@@ -30,10 +28,12 @@ const BASE_SCORE: Record<SymbolType, number> = Object.fromEntries(
 // ── 심볼 목록 (데스크탑 패널 + 모바일 시트 공용) ───────────────────────────
 function OddsList({
     odds,
+    baseOdds,
     hasModifier,
     effects,
 }: {
     odds: { type: SymbolType; pct: number }[];
+    baseOdds: Record<SymbolType, number>;
     hasModifier: boolean;
     effects: Effect[];
 }) {
@@ -42,7 +42,8 @@ function OddsList({
             {odds.map(({ type, pct }) => {
                 const { emoji, label, neon } = SYMBOL_META[type];
                 const isRemoved = pct === 0;
-                const isModified = hasModifier && Math.abs(pct - BASE_PCT) > 0.1;
+                const basePct = baseOdds[type] ?? 0;
+                const isModified = hasModifier && Math.abs(pct - basePct) > 0.1;
 
                 const baseScore = BASE_SCORE[type];
                 const multiplier = getSymbolScoreMultiplier(type, effects);
@@ -72,9 +73,9 @@ function OddsList({
                                     {isModified && !isRemoved && (
                                         <span
                                             className="text-[9px] font-bold"
-                                            style={{ color: pct > BASE_PCT ? "var(--neon-green)" : "var(--neon-pink)" }}
+                                            style={{ color: pct > basePct ? "var(--neon-green)" : "var(--neon-pink)" }}
                                         >
-                                            {pct > BASE_PCT ? "▲" : "▼"}
+                                            {pct > basePct ? "▲" : "▼"}
                                         </span>
                                     )}
                                     {isRemoved && (
@@ -139,7 +140,7 @@ function OddsList({
                                     boxShadow: isRemoved || !isModified ? "none" : `0 0 6px ${neon}aa`,
                                 }}
                                 animate={{ width: `${pct}%` }}
-                                initial={{ width: `${BASE_PCT}%` }}
+                                initial={{ width: `${basePct}%` }}
                                 transition={{ duration: 0.55, ease: "easeOut" }}
                             />
                         </div>
@@ -156,6 +157,10 @@ export function SymbolOddsPanel() {
     const [sheetOpen, setSheetOpen] = useState(false);
 
     const odds = useMemo(() => calculateSymbolOdds(SYMBOL_POOL, activeEffects), [activeEffects]);
+    const baseOdds = useMemo(() => {
+        const base = calculateSymbolOdds(SYMBOL_POOL, []);
+        return Object.fromEntries(base.map((o) => [o.type, o.pct])) as Record<SymbolType, number>;
+    }, []);
 
     const hasModifier = activeEffects.some((e) => e.type === "symbol_rate_up");
 
@@ -184,13 +189,8 @@ export function SymbolOddsPanel() {
                     style={{ background: "linear-gradient(to right, transparent, rgba(0,229,255,0.22), transparent)" }}
                 />
 
-                <OddsList odds={odds} hasModifier={hasModifier} effects={activeEffects} />
+                <OddsList odds={odds} baseOdds={baseOdds} hasModifier={hasModifier} effects={activeEffects} />
 
-                <div className="pt-1 text-center" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                    <span className="text-[10px] tabular-nums" style={{ color: "var(--text-muted)" }}>
-                        base 12.5% / symbol
-                    </span>
-                </div>
             </div>
 
             {/* ── 모바일: FAB 버튼 ────────────────────────────────────────────────── */}
@@ -265,17 +265,9 @@ export function SymbolOddsPanel() {
                             </div>
 
                             <div className="flex flex-col gap-3">
-                                <OddsList odds={odds} hasModifier={hasModifier} effects={activeEffects} />
+                                <OddsList odds={odds} baseOdds={baseOdds} hasModifier={hasModifier} effects={activeEffects} />
                             </div>
 
-                            <div
-                                className="mt-4 text-center"
-                                style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}
-                            >
-                                <span className="text-[10px] tabular-nums" style={{ color: "var(--text-muted)" }}>
-                                    base 12.5% / symbol
-                                </span>
-                            </div>
                         </motion.div>
                     </>
                 )}
