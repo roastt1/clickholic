@@ -19,8 +19,11 @@ jest.mock('framer-motion', () => {
 })
 
 jest.mock('@/store/gameStore', () => ({
-  useGameStore: (selector: (s: { spinId: number; scoreGain: number }) => unknown) =>
-    selector({ spinId: 0, scoreGain: 0 }),
+  useGameStore: (selector: (s: {
+    spinId: number; scoreGain: number;
+    phase: string; patternBreakdowns: unknown[]; revealIndex: number
+  }) => unknown) =>
+    selector({ spinId: 1, scoreGain: 0, phase: 'idle', patternBreakdowns: [], revealIndex: 0 }),
 }))
 
 const DEFAULT_PROPS = {

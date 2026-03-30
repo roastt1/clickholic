@@ -6,15 +6,13 @@ import { calculateScore } from './score'
 
 /**
  * symbol_rate_up 효과를 반영한 가중치 풀 생성
- * 기본 가중치 1.0, rate_up value만큼 추가 (음수면 감소, -1 이하면 제거)
+ * 기본 weight를 항상 반영하고, rate_up value만큼 추가 (음수면 감소, -1 이하면 제거)
  */
 function buildWeightedPool(
   symbolPool: SlotSymbol[],
   effects: Effect[],
 ): SlotSymbol[] {
   const rateEffects = effects.filter((e) => e.type === 'symbol_rate_up')
-
-  if (rateEffects.length === 0) return symbolPool
 
   const weighted: SlotSymbol[] = []
 
