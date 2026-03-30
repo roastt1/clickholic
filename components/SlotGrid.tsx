@@ -20,15 +20,18 @@ const FALLBACK_STRIPS: SlotSymbol[][] = Array.from({ length: 5 }, (_, col) =>
 )
 
 interface SlotGridProps {
-  grid:       SlotSymbol[][] | null
-  isSpinning?: boolean  // kept for API compatibility, animation is store-driven
+  grid:              SlotSymbol[][] | null
+  isSpinning?:       boolean  // kept for API compatibility, animation is store-driven
+  onReelStop?:       (colIdx: number) => void
+  overrideHighlight?: Set<string>  // revealing 페이즈에서 현재 패턴만 하이라이트
 }
 
-export function SlotGrid({ grid }: SlotGridProps) {
+export function SlotGrid({ grid, onReelStop, overrideHighlight }: SlotGridProps) {
   const spinId     = useGameStore((s) => s.spinId)
   const spinStrips = useGameStore((s) => s.spinStrips)
 
   const highlightedPositions = useMemo(() => {
+    if (overrideHighlight !== undefined) return overrideHighlight
     if (!grid) return new Set<string>()
     const groups    = findLines(grid)
     const positions = new Set<string>()
@@ -38,7 +41,7 @@ export function SlotGrid({ grid }: SlotGridProps) {
       }
     }
     return positions
-  }, [grid])
+  }, [grid, overrideHighlight])
 
   // ── 스켈레톤 (grid=null) ───────────────────────────────────────────────────
   if (!grid) {
@@ -82,6 +85,7 @@ export function SlotGrid({ grid }: SlotGridProps) {
             highlighted={highlighted}
             columnIndex={colIdx}
             spinId={spinId}
+            onStop={onReelStop ? () => onReelStop(colIdx) : undefined}
           />
         )
       })}
