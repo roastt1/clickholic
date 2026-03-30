@@ -5,12 +5,12 @@ describe('calculateRoundTarget', () => {
     expect(calculateRoundTarget(1)).toBe(20)
   })
 
-  test('2라운드 목표는 52 (누적: 20+32)', () => {
-    expect(calculateRoundTarget(2)).toBe(52)
+  test('2라운드 목표는 50 (누적 52 → 10단위 반올림)', () => {
+    expect(calculateRoundTarget(2)).toBe(50)
   })
 
-  test('3라운드 목표는 103 (누적: 20+32+51)', () => {
-    expect(calculateRoundTarget(3)).toBe(103)
+  test('3라운드 목표는 100 (누적 103 → 10단위 반올림)', () => {
+    expect(calculateRoundTarget(3)).toBe(100)
   })
 
   test('라운드가 올라갈수록 목표가 증가', () => {

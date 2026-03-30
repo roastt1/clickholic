@@ -16,7 +16,7 @@ export function calculateRoundTarget(round: number): number {
   for (let r = 1; r <= round; r++) {
     cumulative += Math.floor(ROUND_BASE_TARGET * Math.pow(ROUND_SCALE_FACTOR, r - 1))
   }
-  return cumulative
+  return Math.round(cumulative / 10) * 10
 }
 
 /**
