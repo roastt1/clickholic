@@ -5,13 +5,29 @@ import type { ItemCard } from './card'
 export type GamePhase =
   | 'idle'
   | 'spinning'
+  | 'revealing'
   | 'round_clear'
   | 'game_over'
+
+export interface PatternFlags {
+  hasFullHouse: boolean
+  hasVShape: boolean
+  lineCount: number
+}
+
+export interface PatternBreakdown {
+  type: 'line' | 'vshape' | 'fullhouse'
+  positions: Array<[number, number]>
+  score: number
+  label: string  // e.g. "LINE ×2", "V-SHAPE ×5", "FULL HOUSE ×10"
+}
 
 export interface SpinResult {
   symbols: SlotSymbol[][] // 2D [row][col], 3행 5열
   score: number
   bonuses: Effect[]
+  patternFlags: PatternFlags
+  patternBreakdowns: PatternBreakdown[]
 }
 
 export interface GameState {
@@ -30,4 +46,7 @@ export interface GameState {
   spinId: number            // 스핀마다 증가 — 릴 애니메이션 트리거용
   spinStrips: SlotSymbol[][] | null
   scoreGain: number         // 마지막 스핀에서 얻은 점수 (점수 플래시용)
+  patternBreakdowns: PatternBreakdown[]
+  revealIndex: number
+  pendingPhase: 'idle' | 'round_clear' | 'game_over'
 }

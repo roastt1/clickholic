@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect } from "react";
+import { memo, useEffect, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
 import type { SlotSymbol } from "@/types/symbol";
 import { REEL_FAKE_COUNT } from "@/store/gameStore";
@@ -33,6 +33,7 @@ interface ReelColumnProps {
     highlighted: boolean[]; // [row0, row1, row2] 하이라이트 여부
     columnIndex: number; // 0–4: 스태거 기준
     spinId: number; // 스핀마다 증가 → 애니메이션 트리거
+    onStop?: () => void; // 스프링 정착 완료 시 호출
 }
 
 export const ReelColumn = memo(function ReelColumn({
@@ -41,11 +42,18 @@ export const ReelColumn = memo(function ReelColumn({
     highlighted,
     columnIndex,
     spinId,
+    onStop,
 }: ReelColumnProps) {
     const controls = useAnimation();
     const visibleH = 3 * CELL + 2 * GAP; // 184px
     const phase1Dur = PHASE1_BASE + columnIndex * PHASE1_STAGGER;
     const fastTarget = -(REEL_FAKE_COUNT * 0.78 * STEP); // phase-1 종착점
+
+    // stale closure 방지: onStop을 ref로 보관
+    const onStopRef = useRef(onStop);
+    useEffect(() => {
+        onStopRef.current = onStop;
+    }, [onStop]);
 
     // ── spinId 변경 시 릴 애니메이션 실행 ────────────────────────────────────
     useEffect(() => {
@@ -72,6 +80,12 @@ export const ReelColumn = memo(function ReelColumn({
                     },
                 }),
             );
+
+        // 릴이 시각적으로 "탁" 멈추는 시점(Phase 1 종료 + 스프링 초기 도달 ~140ms)에 소리 재생
+        const tickDelay = (phase1Dur + 0.2) * 1000;
+        const timer = setTimeout(() => onStopRef.current?.(), tickDelay);
+
+        return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [spinId]);
 
@@ -122,7 +136,7 @@ export const ReelColumn = memo(function ReelColumn({
                                 background: isHigh ? `color-mix(in srgb, ${neon} 12%, #0c0c22)` : "var(--bg-card)",
                                 border: `1px solid ${isHigh ? neon : "var(--border-dim)"}`,
                                 boxShadow: isHigh ? `0 0 10px ${neon}99, 0 0 20px ${neon}44` : "none",
-                                transition: "box-shadow 0.3s, border-color 0.3s, background 0.3s",
+                                transition: "box-shadow 0.15s, border-color 0.15s, background 0.15s",
                             }}
                         >
                             {emoji}
