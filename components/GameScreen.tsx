@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import { useSoundEffects } from '@/hooks/useSoundEffects'
@@ -9,6 +9,7 @@ import { SlotGrid } from './SlotGrid'
 import { SpinButton } from './SpinButton'
 import { CardPanel } from './CardPanel'
 import { AugmentVault } from './AugmentVault'
+import { VolumeControl } from './VolumeControl'
 import { SymbolOddsPanel } from './SymbolOddsPanel'
 import { PatternReveal } from './PatternReveal'
 import type { ItemCard } from '@/types/card'
@@ -31,6 +32,8 @@ export function GameScreen() {
   const selectItem         = useGameStore((s) => s.selectItem)
   const resetGame          = useGameStore((s) => s.resetGame)
 
+  const [volume, setVolume] = useState(0.8)
+
   const {
     playSpinStart,
     playReelTick,
@@ -39,7 +42,7 @@ export function GameScreen() {
     playJackpot,
     playRoundClear,
     playGameOver,
-  } = useSoundEffects()
+  } = useSoundEffects(volume)
 
   // 스핀 버튼 클릭 → 클릭음 + 스핀 실행
   const handleSpin = useCallback(() => {
@@ -115,9 +118,9 @@ export function GameScreen() {
     >
       <div className="flex flex-col items-center gap-5 w-full max-w-sm">
 
-        {/* ── Title + 보관함 버튼 ─────────────────────────── */}
+        {/* ── Title + 버튼 ─────────────────────────────── */}
         <div className="flex items-center justify-between w-full pt-2">
-          <div className="w-12" /> {/* 좌측 여백 (대칭) */}
+          <VolumeControl volume={volume} onChange={setVolume} />
           <div className="flex flex-col items-center gap-1">
             <h1
               className="text-xl sm:text-2xl font-black tracking-[0.25em] uppercase neon-cyan"
