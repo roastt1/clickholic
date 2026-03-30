@@ -1,12 +1,19 @@
 import type { SlotSymbol } from '@/types/symbol'
 import type { SymbolType } from '@/types/symbol'
 import type { Effect } from '@/types/effect'
+import type { PatternBreakdown } from '@/types/game'
 import { findLines, detectVShapes, isFullHouse } from './grid'
 
 export interface ScoreBreakdown {
   groupScore: number  // 연결 그룹 점수 합
   effectBonus: number
   total: number
+  patternFlags: {
+    hasFullHouse: boolean
+    hasVShape: boolean
+    lineCount: number
+  }
+  patternBreakdowns: PatternBreakdown[]
 }
 
 // 직선 길이별 배율 (3→×1, 4→×2, 5→×3)
@@ -38,13 +45,28 @@ function sumGroupValues(
   }, 0)
 }
 
-export function calculateGroupScore(grid: SlotSymbol[][], effects: Effect[] = []): number {
+interface GroupScoreResult {
+  total: number
+  breakdowns: PatternBreakdown[]
+}
+
+export function calculateGroupScore(grid: SlotSymbol[][], effects: Effect[] = []): GroupScoreResult {
   // 풀 하우스: 15개 전체 동일 → ×10
   if (isFullHouse(grid)) {
-    return grid.flat().reduce((sum, s) => {
+    const score = grid.flat().reduce((sum, s) => {
       const multiplier = getSymbolScoreMultiplier(s.type, effects)
       return sum + s.groupValue * multiplier
     }, 0) * 10
+
+    const allPositions: Array<[number, number]> = Array.from(
+      { length: 3 * 5 },
+      (_, i) => [Math.floor(i / 5), i % 5] as [number, number],
+    )
+
+    return {
+      total: score,
+      breakdowns: [{ type: 'fullhouse', positions: allPositions, score, label: 'FULL HOUSE ×10' }],
+    }
   }
 
   // V자/역V자 탐지 → 해당 셀을 직선 탐지에서 제외해 중복 계산 방지
@@ -56,25 +78,36 @@ export function calculateGroupScore(grid: SlotSymbol[][], effects: Effect[] = []
   // V자 셀을 제외한 직선 탐지
   const lines = findLines(grid, vShapeCells)
 
-  const vScore = vShapes.reduce(
-    (sum, v) => sum + sumGroupValues(grid, v.positions, effects) * 5,
-    0,
-  )
+  const lineBreakdowns: PatternBreakdown[] = lines.map((line) => {
+    const mult = getLineMultiplier(line.size)
+    return {
+      type:      'line' as const,
+      positions: line.positions,
+      score:     sumGroupValues(grid, line.positions, effects) * mult,
+      label:     mult === 1 ? 'LINE' : `LINE ×${mult}`,
+    }
+  })
 
-  const lineScore = lines.reduce(
-    (sum, line) =>
-      sum + sumGroupValues(grid, line.positions, effects) * getLineMultiplier(line.size),
-    0,
-  )
+  const vBreakdowns: PatternBreakdown[] = vShapes.map((v) => ({
+    type:      'vshape' as const,
+    positions: v.positions,
+    score:     sumGroupValues(grid, v.positions, effects) * 5,
+    label:     'V-SHAPE ×5',
+  }))
 
-  return vScore + lineScore
+  // 점수 낮은 순 정렬 (빌드업 효과) — 원본 배열 변경 없이 새 배열 반환
+  const breakdowns = [...lineBreakdowns, ...vBreakdowns].sort((a, b) => a.score - b.score)
+
+  const total = breakdowns.reduce((sum, b) => sum + b.score, 0)
+
+  return { total, breakdowns }
 }
 
 export function calculateScore(
   grid: SlotSymbol[][],
   effects: Effect[],
 ): ScoreBreakdown {
-  const groupScore = calculateGroupScore(grid, effects)
+  const { total: groupScore, breakdowns } = calculateGroupScore(grid, effects)
 
   // score_multiply는 순차 곱셈, effectBonus는 없음 (라운드 기반에서 score_add 제거)
   const multipliedTotal = effects
@@ -83,5 +116,11 @@ export function calculateScore(
 
   const total = Math.floor(multipliedTotal)
 
-  return { groupScore, effectBonus: 0, total }
+  const patternFlags = {
+    hasFullHouse: breakdowns.some((b) => b.type === 'fullhouse'),
+    hasVShape:    breakdowns.some((b) => b.type === 'vshape'),
+    lineCount:    breakdowns.filter((b) => b.type === 'line').length,
+  }
+
+  return { groupScore, effectBonus: 0, total, patternFlags, patternBreakdowns: breakdowns }
 }

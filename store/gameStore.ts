@@ -27,27 +27,32 @@ function makeSpinStrips(): SlotSymbol[][] {
 }
 
 const INITIAL_STATE: GameState = {
-  phase:           'idle',
-  score:           0,
-  roundScore:      0,
-  roundTarget:     calculateRoundTarget(1),
-  spinsInRound:    0,
-  maxSpinsInRound: getSpinsInRound(),
-  deck:            [],
-  activeEffects:   [],
-  currentGrid:     null,
-  spinHistory:     [],
-  round:           1,
-  offeredItems:    [],
-  spinId:          0,
-  spinStrips:      null,
-  scoreGain:       0,
+  phase:              'idle',
+  score:              0,
+  roundScore:         0,
+  roundTarget:        calculateRoundTarget(1),
+  spinsInRound:       0,
+  maxSpinsInRound:    getSpinsInRound(),
+  deck:               [],
+  activeEffects:      [],
+  currentGrid:        null,
+  spinHistory:        [],
+  round:              1,
+  offeredItems:       [],
+  spinId:             0,
+  spinStrips:         null,
+  scoreGain:          0,
+  patternBreakdowns:  [],
+  revealIndex:        0,
+  pendingPhase:       'idle',
 }
 
 interface GameStore extends GameState {
-  spin: () => void
-  selectItem: (card: ItemCard) => void
-  resetGame: () => void
+  spin:          () => void
+  startReveal:   () => void
+  advanceReveal: () => void
+  selectItem:    (card: ItemCard) => void
+  resetGame:     () => void
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -71,26 +76,49 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const newSpinsInRound  = spinsInRound + 1
     const isLastSpin       = newSpinsInRound >= maxSpinsInRound
 
-    let nextPhase: GameState['phase']
+    let pendingPhase: 'idle' | 'round_clear' | 'game_over'
     if (isLastSpin) {
-      nextPhase = newScore >= roundTarget ? 'round_clear' : 'game_over'
+      pendingPhase = newScore >= roundTarget ? 'round_clear' : 'game_over'
     } else {
-      nextPhase = 'idle'
+      pendingPhase = 'idle'
     }
 
     set({
-      phase:         nextPhase,
-      currentGrid:   result.symbols,
-      score:         newScore,
-      roundScore:    newRoundScore,
-      spinsInRound:  newSpinsInRound,
-      activeEffects: remainingEffects,
-      spinHistory:   [...spinHistory, result],
-      offeredItems:  nextPhase === 'round_clear' ? pickOfferedItems() : [],
-      spinId:        spinId + 1,
-      spinStrips:    makeSpinStrips(),
-      scoreGain:     result.score,
+      phase:             'spinning', // startReveal()이 호출될 때까지 유지
+      currentGrid:       result.symbols,
+      score:             newScore,
+      roundScore:        newRoundScore,
+      spinsInRound:      newSpinsInRound,
+      activeEffects:     remainingEffects,
+      spinHistory:       [...spinHistory, result],
+      offeredItems:      pendingPhase === 'round_clear' ? pickOfferedItems() : [],
+      spinId:            spinId + 1,
+      spinStrips:        makeSpinStrips(),
+      scoreGain:         result.score,
+      patternBreakdowns: result.patternBreakdowns,
+      revealIndex:       0,
+      pendingPhase,
     })
+  },
+
+  // 모든 릴이 멈춘 후 GameScreen에서 호출
+  startReveal: () => {
+    const { patternBreakdowns, pendingPhase } = get()
+    if (patternBreakdowns.length === 0) {
+      set({ phase: pendingPhase })
+    } else {
+      set({ phase: 'revealing', revealIndex: 0 })
+    }
+  },
+
+  // 자동 타이머로 다음 패턴으로 이동
+  advanceReveal: () => {
+    const { revealIndex, patternBreakdowns, pendingPhase } = get()
+    if (revealIndex < patternBreakdowns.length - 1) {
+      set({ revealIndex: revealIndex + 1 })
+    } else {
+      set({ phase: pendingPhase, patternBreakdowns: [] })
+    }
   },
 
   selectItem: (card: ItemCard) => {

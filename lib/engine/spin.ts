@@ -74,5 +74,7 @@ export function executeSpin(
     bonuses: effects.filter(
       (e) => e.type === 'score_multiply' || e.type === 'symbol_score_multiply',
     ),
+    patternFlags:      breakdown.patternFlags,
+    patternBreakdowns: breakdown.patternBreakdowns,
   }
 }

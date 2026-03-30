@@ -11,6 +11,7 @@ interface SpinButtonProps {
 const PHASE_LABEL: Record<GamePhase, string> = {
   idle:        'SPIN',
   spinning:    '...',
+  revealing:   '...',
   round_clear: '...',
   game_over:   'GAME OVER',
 }
