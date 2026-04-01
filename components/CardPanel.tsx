@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import type { ItemCard } from '@/types/card'
@@ -13,115 +14,140 @@ const RARITY_NEON: Record<ItemCard['rarity'], string> = {
 }
 
 interface CardPanelProps {
-  visible:    boolean
-  onSelect:   (card: ItemCard) => void
-  roundScore: number
+  visible:     boolean
+  onSelect:    (card: ItemCard) => void
+  roundScore:  number
   roundTarget: number
 }
 
 export function CardPanel({ visible, onSelect, roundScore, roundTarget }: CardPanelProps) {
   const offeredItems = useGameStore((s) => s.offeredItems)
+  // minimized resets to false on each mount (AnimatePresence unmounts on exit)
+  const [minimized, setMinimized] = useState(false)
 
   return (
     <AnimatePresence>
       {visible && (
         <>
-          {/* Backdrop */}
-          <motion.div
-            className="fixed inset-0 z-40"
-            style={{ background: 'rgba(5, 5, 16, 0.85)', backdropFilter: 'blur(4px)' }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-          />
-
-          {/* Bottom sheet */}
-          <motion.div
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl px-4 pt-5 pb-10"
-            style={{
-              background: 'var(--bg-secondary)',
-              borderTop:  '1px solid rgba(0,255,136,0.25)',
-              boxShadow:  '0 -8px 40px rgba(0,255,136,0.1), 0 -2px 0 rgba(0,255,136,0.2)',
-            }}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-          >
-            {/* Handle */}
-            <div
-              className="w-10 h-1 rounded-full mx-auto mb-4"
-              style={{ background: 'rgba(0,255,136,0.3)' }}
-            />
-
-            {/* 클리어 메시지 */}
-            <div className="text-center mb-5">
-              <p
-                className="text-xs tracking-[0.35em] uppercase mb-1"
-                style={{ color: 'var(--neon-green)', fontFamily: 'var(--font-orbitron)' }}
+          {/* ── Full overlay (카드 선택) ─────────────────────── */}
+          <AnimatePresence>
+            {!minimized && (
+              <motion.div
+                key="overlay"
+                className="fixed inset-0 z-50 flex flex-col items-center justify-center"
+                style={{ background: 'rgba(5, 5, 16, 0.78)', backdropFilter: 'blur(10px)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
               >
-                Round Clear!
-              </p>
-              <p
-                className="text-[11px] tabular-nums"
-                style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-space-mono)' }}
-              >
-                {roundScore.toLocaleString()} / {Math.round(roundTarget / 10) * 10} pts
-              </p>
-            </div>
-
-            <p
-              className="text-[10px] tracking-[0.3em] uppercase text-center mb-4"
-              style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-orbitron)' }}
-            >
-              증강체를 선택하세요
-            </p>
-
-            <div className="flex gap-3 w-full">
-              {offeredItems.map((card, i) => {
-                const neon = RARITY_NEON[card.rarity]
-                return (
-                  <motion.button
-                    key={card.id}
-                    onClick={() => onSelect(card)}
-                    className="flex flex-col items-start gap-2 flex-1 px-3 py-4 rounded-2xl text-left"
-                    style={{
-                      background: 'var(--bg-card)',
-                      border:     `1px solid ${neon}66`,
-                      boxShadow:  `0 0 14px ${neon}22`,
-                    }}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08, type: 'spring', stiffness: 300, damping: 24 }}
-                    whileHover={{
-                      scale:     1.04,
-                      boxShadow: `0 0 24px ${neon}55, inset 0 0 20px ${neon}0d`,
-                    }}
-                    whileTap={{ scale: 0.97 }}
+                {/* ── Header ──────────────────────────────────── */}
+                <motion.div
+                  className="text-center mb-8"
+                  initial={{ opacity: 0, y: -16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05, duration: 0.3 }}
+                >
+                  <p
+                    className="text-xs tracking-[0.35em] uppercase mb-1"
+                    style={{ color: 'var(--neon-green)', fontFamily: 'var(--font-orbitron)' }}
                   >
-                    <span
-                      className="text-[10px] font-bold tracking-[0.2em] uppercase"
-                      style={{ color: neon, fontFamily: 'var(--font-orbitron)' }}
-                    >
-                      {card.rarity}
-                    </span>
-                    <span
-                      className="text-sm font-bold leading-tight"
-                      style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-orbitron)' }}
-                    >
-                      {card.name}
-                    </span>
-                    <span
-                      className="text-xs leading-snug"
-                      style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-space-mono)' }}
-                    >
-                      {card.description}
-                    </span>
-                  </motion.button>
-                )
-              })}
-            </div>
+                    Round Clear!
+                  </p>
+                  <p
+                    className="text-[11px] tabular-nums"
+                    style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-space-mono)' }}
+                  >
+                    {roundScore.toLocaleString()} / {Math.round(roundTarget / 10) * 10} pts
+                  </p>
+                  <p
+                    className="text-[10px] tracking-[0.3em] uppercase mt-2"
+                    style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-orbitron)' }}
+                  >
+                    증강체를 선택하세요
+                  </p>
+                </motion.div>
+
+                {/* ── Cards ───────────────────────────────────── */}
+                <div className="flex gap-4 px-4 w-full max-w-3xl justify-center">
+                  {offeredItems.map((card, i) => {
+                    const neon = RARITY_NEON[card.rarity]
+                    return (
+                      <motion.button
+                        key={card.id}
+                        onClick={() => onSelect(card)}
+                        className="flex flex-col items-start gap-3 flex-1 max-w-[200px] min-h-[220px] px-4 py-5 rounded-2xl text-left cursor-pointer"
+                        style={{
+                          background: 'var(--bg-card)',
+                          border:     `1px solid ${neon}66`,
+                          boxShadow:  `0 0 20px ${neon}22`,
+                        }}
+                        initial={{ opacity: 0, y: 60 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.12, type: 'spring', stiffness: 280, damping: 24 }}
+                        whileHover={{
+                          scale:       1.05,
+                          boxShadow:   `0 0 36px ${neon}55, inset 0 0 24px ${neon}0d`,
+                          borderColor: `${neon}cc`,
+                        }}
+                        whileTap={{ scale: 0.97 }}
+                      >
+                        <span
+                          className="text-[10px] font-bold tracking-[0.2em] uppercase"
+                          style={{ color: neon, fontFamily: 'var(--font-orbitron)' }}
+                        >
+                          {card.rarity}
+                        </span>
+                        <span
+                          className="text-sm font-bold leading-tight"
+                          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-orbitron)' }}
+                        >
+                          {card.name}
+                        </span>
+                        <span
+                          className="text-xs leading-snug"
+                          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-space-mono)' }}
+                        >
+                          {card.description}
+                        </span>
+                      </motion.button>
+                    )
+                  })}
+                </div>
+
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ── 토글 버튼 (항상 하단 고정) ────────────────────── */}
+          <motion.div
+            className="fixed bottom-6 left-1/2 z-50"
+            style={{ x: '-50%' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, type: 'spring', stiffness: 320, damping: 26 }}
+          >
+            <motion.button
+              onClick={() => setMinimized((v) => !v)}
+              aria-pressed={minimized}
+              aria-label={minimized ? '증강체 선택 화면으로 돌아가기' : '게임 화면 보기'}
+              className="px-6 py-2.5 rounded-full text-[11px] tracking-[0.2em] uppercase font-bold"
+              style={{
+                fontFamily: 'var(--font-orbitron)',
+                background: minimized ? 'rgba(0,229,255,0.1)'        : 'rgba(0,255,136,0.08)',
+                color:      minimized ? 'var(--neon-cyan)'            : 'var(--neon-green)',
+                border:     minimized ? '1px solid rgba(0,229,255,0.4)' : '1px solid rgba(0,255,136,0.35)',
+                boxShadow:  minimized ? '0 0 20px rgba(0,229,255,0.2)' : '0 0 14px rgba(0,255,136,0.15)',
+                cursor:     'pointer',
+              }}
+              whileHover={{
+                scale:     1.06,
+                boxShadow: minimized ? '0 0 30px rgba(0,229,255,0.35)' : '0 0 24px rgba(0,255,136,0.3)',
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {minimized ? '증강체 선택으로 돌아가기' : '화면 보기'}
+            </motion.button>
           </motion.div>
         </>
       )}
