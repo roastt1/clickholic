@@ -15,7 +15,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Agumatch",
+  title: "Clickholic",
   description: "3x5 슬롯 머신 기반 전략 덱빌딩 로그라이크 퍼즐 게임",
 };
 
