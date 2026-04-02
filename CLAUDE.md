@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# Agumatch (아구매치)
+# Clickholic
 
 3x5 슬롯 머신 기반 전략 덱빌딩 로그라이크 퍼즐 게임.
 매 스핀마다 15개 심볼이 랜덤 배치되어 점수를 계산하고, 아이템 카드를 선택해 덱을 강화하는 10분 내외의 고점수 인플레이션 게임.
@@ -118,7 +118,7 @@ if (!supabaseUrl) throw new Error("NEXT_PUBLIC_SUPABASE_URL is not set");
 
 ### 파일 크기
 
-파일당 800줄 이하, 함수당 50줄 이하를 유지한다.
+파일당 200줄 이하, 함수당 50줄 이하를 유지한다. (테스트 파일 `*.test.ts`, `*.test.tsx` 예외)
 게임 엔진 로직이 복잡해지면 `lib/engine/score.ts`, `lib/engine/effects.ts` 등으로 분리한다.
 
 ## Git 워크플로우 (CRITICAL)
