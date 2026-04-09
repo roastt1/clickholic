@@ -105,18 +105,20 @@ export function VolumeControl({ volume, onChange }: VolumeControlProps) {
               }}
             />
 
-            {/* 현재 상태 표시 */}
-            <span
+            {/* 음소거 토글 — 고정 너비로 레이아웃 안정 */}
+            <button
+              onClick={() => onChange(volume > 0 ? 0 : 0.8)}
               className="text-[9px] tracking-wider uppercase"
               style={{
                 width:      '100%',
                 textAlign:  'center',
                 color:      volume === 0 ? '#ff2d78' : 'var(--text-muted)',
                 fontFamily: 'var(--font-orbitron)',
+                transition: 'color 0.2s',
               }}
             >
-              {volume === 0 ? 'OFF' : 'ON'}
-            </span>
+              {volume === 0 ? 'ON' : 'OFF'}
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
