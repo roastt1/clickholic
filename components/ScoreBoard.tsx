@@ -117,7 +117,7 @@ export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, 
                                     initial={{ opacity: 0, y: 6 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.25 }}
+                                    transition={{ duration: 0.1 }}
                                     style={{
                                         color: "var(--neon-green)",
                                         fontSize: "0.85rem",
