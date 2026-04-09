@@ -19,7 +19,7 @@ export interface PatternBreakdown {
   type: 'line' | 'vshape' | 'fullhouse'
   positions: Array<[number, number]>
   score: number
-  label: string  // e.g. "LINE ×2", "V-SHAPE ×5", "FULL HOUSE ×10"
+  label: string  // e.g. "LINE ×2", "V-SHAPE ×5", "JACKPOT ×10"
 }
 
 export interface SpinResult {

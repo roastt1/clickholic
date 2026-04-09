@@ -57,7 +57,9 @@ export function useGameScreen() {
         if (current.type === "fullhouse") playJackpot();
         else if (current.type === "vshape") playMatchVShape();
         else playMatchLine();
-        const timer = setTimeout(advanceReveal, 600);
+        const isJackpotSpin = patternBreakdowns.some((b) => b.type === "fullhouse");
+        const delay = isJackpotSpin ? 450 : 600;
+        const timer = setTimeout(advanceReveal, delay);
         return () => clearTimeout(timer);
     }, [phase, revealIndex, patternBreakdowns, playJackpot, playMatchVShape, playMatchLine, advanceReveal]);
 
@@ -82,11 +84,22 @@ export function useGameScreen() {
     const currentPattern = phase === "revealing" ? (patternBreakdowns[revealIndex] ?? null) : null;
 
     return {
-        phase, score, roundScore, roundTarget,
-        spinsInRound, maxSpinsInRound, round,
-        currentGrid, revealIndex,
-        resetGame, volume, setVolume,
-        handleSpin, handleReelStop, handleSelectItem,
-        revealHighlight, currentPattern,
+        phase,
+        score,
+        roundScore,
+        roundTarget,
+        spinsInRound,
+        maxSpinsInRound,
+        round,
+        currentGrid,
+        revealIndex,
+        resetGame,
+        volume,
+        setVolume,
+        handleSpin,
+        handleReelStop,
+        handleSelectItem,
+        revealHighlight,
+        currentPattern,
     };
 }

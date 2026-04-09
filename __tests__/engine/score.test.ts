@@ -19,7 +19,7 @@ describe('calculateGroupScore', () => {
       ['crown',  'lucky7', 'skull', 'lemon', 'cherry'],
       ['clover',  'lemon',  'coin',  'gem',   'crown'],
     ])
-    expect(calculateGroupScore(grid)).toBe(0)
+    expect(calculateGroupScore(grid).total).toBe(0)
   })
 
   test('가로 3개(groupValue=20) → 20×3×1 = 60', () => {
@@ -28,7 +28,7 @@ describe('calculateGroupScore', () => {
       ['lemon',  'gem',    'crown',  'skull', 'lucky7'],
       ['clover',  'lemon',  'coin',   'gem',   'crown'],
     ], 20)
-    expect(calculateGroupScore(grid)).toBe(60)
+    expect(calculateGroupScore(grid).total).toBe(60)
   })
 
   test('가로 4개(groupValue=20) → 20×4×2 = 160', () => {
@@ -37,7 +37,7 @@ describe('calculateGroupScore', () => {
       ['lemon',  'gem',    'crown',  'skull',  'lucky7'],
       ['clover',  'lemon',  'coin',   'gem',    'crown'],
     ], 20)
-    expect(calculateGroupScore(grid)).toBe(160)
+    expect(calculateGroupScore(grid).total).toBe(160)
   })
 
   test('가로 5개(groupValue=20) → 20×5×3 = 300', () => {
@@ -46,7 +46,7 @@ describe('calculateGroupScore', () => {
       ['lemon',  'gem',    'crown',  'skull',  'lucky7'],
       ['clover',  'lemon',  'coin',   'gem',    'crown'],
     ], 20)
-    expect(calculateGroupScore(grid)).toBe(300)
+    expect(calculateGroupScore(grid).total).toBe(300)
   })
 
   test('skull 가로 3개(groupValue=-20) → 감점 -60', () => {
@@ -55,32 +55,50 @@ describe('calculateGroupScore', () => {
       [makeSymbol('cherry', 20), makeSymbol('gem', 10),    makeSymbol('crown', 10),  makeSymbol('clover', 10), makeSymbol('lucky7', 10)],
       [makeSymbol('lemon', 10),  makeSymbol('coin', 10),   makeSymbol('gem', 10),    makeSymbol('crown', 10), makeSymbol('clover', 10)],
     ]
-    expect(calculateGroupScore(grid)).toBe(-60)
+    expect(calculateGroupScore(grid).total).toBe(-60)
   })
 
-  test('V자(∨) 패턴(groupValue=10) → 10×5×5 = 250', () => {
+  // V자(∨) 패턴: cherry at (0,0),(1,1),(2,2),(1,3),(0,4)
+  // V-SHAPE ×5 = 250, 대각↘(0,0→2,2) = 30, 대각↙(0,4→2,2) = 30 → 총 310
+  test('V자(∨) 패턴(groupValue=10) → V-SHAPE 250 + 대각선 2개 60 = 310', () => {
     const grid = [
       [makeSymbol('cherry', 10), makeSymbol('lemon',  10), makeSymbol('clover',  10), makeSymbol('crown',  10), makeSymbol('cherry', 10)],
       [makeSymbol('coin',   10), makeSymbol('cherry', 10), makeSymbol('gem',    10), makeSymbol('cherry', 10), makeSymbol('skull',  10)],
       [makeSymbol('lucky7', 10), makeSymbol('clover',  10), makeSymbol('cherry', 10), makeSymbol('lemon',  10), makeSymbol('crown',  10)],
     ]
-    expect(calculateGroupScore(grid)).toBe(250)
+    expect(calculateGroupScore(grid).total).toBe(310)
   })
 
-  test('역V자(∧) 패턴(groupValue=10) → 10×5×5 = 250', () => {
+  // 역V자(∧) 패턴: clover at (2,0),(1,1),(0,2),(1,3),(2,4)
+  // V-SHAPE ×5 = 250, 대각↘(0,2→2,4) = 30, 대각↙(0,2→2,0) = 30 → 총 310
+  test('역V자(∧) 패턴(groupValue=10) → V-SHAPE 250 + 대각선 2개 60 = 310', () => {
     const grid = [
       [makeSymbol('lemon', 10),  makeSymbol('coin', 10),  makeSymbol('clover', 10), makeSymbol('cherry', 10), makeSymbol('lemon', 10)],
       [makeSymbol('coin', 10),   makeSymbol('clover', 10), makeSymbol('lemon', 10), makeSymbol('clover', 10),  makeSymbol('coin', 10)],
       [makeSymbol('clover', 10),  makeSymbol('lemon', 10), makeSymbol('coin', 10),  makeSymbol('cherry', 10), makeSymbol('clover', 10)],
     ]
-    expect(calculateGroupScore(grid)).toBe(250)
+    expect(calculateGroupScore(grid).total).toBe(310)
   })
 
-  test('풀 하우스(groupValue=10) → 10×15×10 = 1500', () => {
+  // 잭팟(groupValue=10): 모든 패턴 독립 계산
+  // JACKPOT×10=1500 + 가로3줄(150×3=450) + 세로5줄(30×5=150)
+  // + 대각↘3줄(30×3=90) + 대각↙3줄(90) + V-SHAPE×2(250×2=500) = 2780
+  test('잭팟(groupValue=10) → 모든 패턴 합산 2780', () => {
     const grid = Array.from({ length: 3 }, () =>
       Array.from({ length: 5 }, () => makeSymbol('coin', 10)),
     )
-    expect(calculateGroupScore(grid)).toBe(1500)
+    expect(calculateGroupScore(grid).total).toBe(2780)
+  })
+
+  test('잭팟일 때 패턴 종류 모두 포함, fullhouse는 마지막', () => {
+    const grid = Array.from({ length: 3 }, () =>
+      Array.from({ length: 5 }, () => makeSymbol('coin', 10)),
+    )
+    const { breakdowns } = calculateGroupScore(grid)
+    expect(breakdowns.some((b) => b.type === 'fullhouse')).toBe(true)
+    expect(breakdowns.some((b) => b.type === 'line')).toBe(true)
+    expect(breakdowns.some((b) => b.type === 'vshape')).toBe(true)
+    expect(breakdowns[breakdowns.length - 1].type).toBe('fullhouse')
   })
 
   test('symbol_score_multiply 적용: cherry×2 → 40×3×1 = 120', () => {
@@ -92,7 +110,7 @@ describe('calculateGroupScore', () => {
     const effects: Effect[] = [
       { type: 'symbol_score_multiply', value: 2, duration: 'permanent', targetSymbol: 'cherry', description: 'cherry ×2' },
     ]
-    expect(calculateGroupScore(grid, effects)).toBe(120) // 20×2 × 3 × 1
+    expect(calculateGroupScore(grid, effects).total).toBe(120) // 20×2 × 3 × 1
   })
 })
 
@@ -106,6 +124,16 @@ describe('calculateScore', () => {
     const result = calculateScore(grid, [])
     expect(result.groupScore).toBe(0)
     expect(result.total).toBe(0)
+  })
+
+  test('잭팟일 때 patternBreakdowns에 fullhouse + line + vshape 모두 포함', () => {
+    const grid = Array.from({ length: 3 }, () =>
+      Array.from({ length: 5 }, () => makeSymbol('coin', 10)),
+    )
+    const result = calculateScore(grid, [])
+    expect(result.patternBreakdowns.some((b) => b.type === 'fullhouse')).toBe(true)
+    expect(result.patternBreakdowns.some((b) => b.type === 'line')).toBe(true)
+    expect(result.patternBreakdowns.some((b) => b.type === 'vshape')).toBe(true)
   })
 
   test('가로 3개(groupValue=20) + 이펙트 없음 → total=60', () => {
