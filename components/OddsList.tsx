@@ -49,11 +49,11 @@ export function OddsList({
                     <div key={type} className="flex flex-col gap-1">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <span style={{ fontSize: "1rem", lineHeight: 1, opacity: isRemoved ? 0.3 : 1 }}>
+                                <span style={{ fontSize: "1.25rem", lineHeight: 1, opacity: isRemoved ? 0.3 : 1 }}>
                                     {emoji}
                                 </span>
                                 <span
-                                    className="text-xs"
+                                    className="text-sm"
                                     style={{
                                         color: isRemoved ? "var(--text-muted)" : "var(--text-primary)",
                                         opacity: isRemoved ? 0.4 : 1,
@@ -67,19 +67,19 @@ export function OddsList({
                                 <div className="flex items-center gap-1">
                                     {isModified && !isRemoved && (
                                         <span
-                                            className="text-[9px] font-bold"
+                                            className="text-[13px] font-bold"
                                             style={{ color: pct > basePct ? "var(--neon-green)" : "var(--neon-pink)" }}
                                         >
                                             {pct > basePct ? "▲" : "▼"}
                                         </span>
                                     )}
                                     {isRemoved && (
-                                        <span className="text-[9px]" style={{ color: "var(--neon-pink)" }}>
+                                        <span className="text-[13px]" style={{ color: "var(--neon-pink)" }}>
                                             ✕
                                         </span>
                                     )}
                                     <span
-                                        className="text-xs tabular-nums font-bold"
+                                        className="text-sm tabular-nums font-bold"
                                         style={{
                                             color: isRemoved
                                                 ? "rgba(255,0,128,0.4)"
@@ -97,14 +97,14 @@ export function OddsList({
                                 <div className="flex items-center gap-1">
                                     {hasScoreBoost && !isRemoved ? (
                                         <>
-                                            <span className="text-xs tabular-nums" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "line-through" }}>
+                                            <span className="text-sm tabular-nums" style={{ color: "rgba(255,255,255,0.45)", textDecoration: "line-through" }}>
                                                 {baseScore}
                                             </span>
-                                            <span className="text-xs tabular-nums font-bold" style={{ color: neon }}>
+                                            <span className="text-sm tabular-nums font-bold" style={{ color: neon }}>
                                                 {effectiveScore}pt
                                             </span>
                                             <span
-                                                className="text-[9px] font-bold px-0.5 rounded"
+                                                className="text-[13px] font-bold px-0.5 rounded"
                                                 style={{ color: neon, background: `${neon}22` }}
                                             >
                                                 ×{multiplier}
@@ -112,7 +112,7 @@ export function OddsList({
                                         </>
                                     ) : (
                                         <span
-                                            className="text-xs tabular-nums"
+                                            className="text-sm tabular-nums"
                                             style={{ color: isRemoved ? "rgba(255,0,128,0.4)" : "rgba(255,255,255,0.6)" }}
                                         >
                                             {baseScore}pt
@@ -125,7 +125,7 @@ export function OddsList({
                         {/* 확률 바 */}
                         <div
                             className="w-full rounded-full overflow-hidden"
-                            style={{ height: "3px", background: "rgba(255,255,255,0.06)" }}
+                            style={{ height: "4px", background: "rgba(255,255,255,0.06)" }}
                         >
                             <motion.div
                                 className="h-full rounded-full"
