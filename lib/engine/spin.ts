@@ -36,24 +36,64 @@ function buildWeightedPool(
 }
 
 /**
- * 심볼 풀에서 랜덤하게 3×5 그리드 생성 (가중치 적용)
+ * luck 스탯 기반 클러스터링 그리드 생성
+ *
+ * 각 셀을 뽑을 때 지금까지 가장 많이 나온 심볼을 강제 선택할 확률을 부여.
+ * clusterChance = min((luck / 100) * mostCommonFrequency, 0.5)
+ *
+ * luck=0 → 기존 동작과 동일 (clusterChance 항상 0)
+ * luck=5, 최빈 심볼 3번 등장 → 15% 강제 확률 → 체감 가능
+ * luck=10, 최빈 심볼 5번 등장 → 50% (상한) → 강한 클러스터링
+ */
+function generateGridWithLuck(pool: SlotSymbol[], luck: number): SlotSymbol[][] {
+  const flat: SlotSymbol[] = []
+  const frequency = new Map<string, number>()
+
+  for (let i = 0; i < ROWS * COLS; i++) {
+    let mostCommonType: string | null = null
+    let maxFreq = 0
+
+    for (const [type, freq] of frequency) {
+      if (freq > maxFreq) {
+        maxFreq = freq
+        mostCommonType = type
+      }
+    }
+
+    const clusterChance = mostCommonType
+      ? Math.min((luck / 100) * maxFreq, 0.5)
+      : 0
+
+    let picked: SlotSymbol
+    if (mostCommonType && Math.random() < clusterChance) {
+      picked = pool.find((s) => s.type === mostCommonType) ?? pool[0]
+    } else {
+      picked = pool[Math.floor(Math.random() * pool.length)]
+    }
+
+    frequency.set(picked.type, (frequency.get(picked.type) ?? 0) + 1)
+    flat.push({ ...picked })
+  }
+
+  return Array.from({ length: ROWS }, (_, row) =>
+    flat.slice(row * COLS, (row + 1) * COLS),
+  )
+}
+
+/**
+ * 심볼 풀에서 랜덤하게 3×5 그리드 생성 (가중치 + luck 클러스터링 적용)
  */
 export function generateGrid(
   symbolPool: SlotSymbol[],
   effects: Effect[] = [],
+  luck = 0,
 ): SlotSymbol[][] {
   if (symbolPool.length === 0) {
     throw new Error('symbolPool is empty')
   }
 
   const pool = buildWeightedPool(symbolPool, effects)
-
-  return Array.from({ length: ROWS }, () =>
-    Array.from({ length: COLS }, () => {
-      const index = Math.floor(Math.random() * pool.length)
-      return { ...pool[index] }
-    }),
-  )
+  return generateGridWithLuck(pool, luck)
 }
 
 /**
@@ -62,8 +102,9 @@ export function generateGrid(
 export function executeSpin(
   symbolPool: SlotSymbol[],
   effects: Effect[],
+  luck = 0,
 ): SpinResult {
-  const symbols = generateGrid(symbolPool, effects)
+  const symbols = generateGrid(symbolPool, effects, luck)
   const breakdown = calculateScore(symbols, effects)
 
   return {
