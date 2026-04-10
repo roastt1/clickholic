@@ -6,6 +6,14 @@ beforeEach(() => {
   useGameStore.getState().resetGame()
 })
 
+/** spin() 후 reveal 애니메이션을 건너뛰어 최종 phase로 전환 */
+function finishSpin() {
+  useGameStore.getState().startReveal()
+  while (useGameStore.getState().phase === 'revealing') {
+    useGameStore.getState().advanceReveal()
+  }
+}
+
 describe('초기 상태', () => {
   test('phase는 idle', () => {
     expect(useGameStore.getState().phase).toBe('idle')
@@ -63,31 +71,34 @@ describe('spin()', () => {
   test('idle이 아닐 때 spin은 무시', () => {
     // maxSpinsInRound를 1로 설정하면 첫 spin 직후 round_clear 혹은 game_over
     useGameStore.setState({ maxSpinsInRound: 1, roundTarget: -9999 })
-    useGameStore.getState().spin() // round_clear 상태
+    useGameStore.getState().spin()
+    finishSpin() // phase → round_clear (idle 아님)
     const scoreBefore = useGameStore.getState().score
     useGameStore.getState().spin() // 무시되어야 함
     expect(useGameStore.getState().score).toBe(scoreBefore)
   })
 
   test('마지막 spin에서 목표 달성 시 round_clear', () => {
-    // maxSpinsInRound=1, roundTarget=0 → 항상 클리어
     useGameStore.setState({ maxSpinsInRound: 1, roundTarget: -9999 })
     useGameStore.getState().spin()
+    finishSpin()
     expect(useGameStore.getState().phase).toBe('round_clear')
   })
 
   test('마지막 spin에서 목표 미달 시 game_over', () => {
-    // maxSpinsInRound=1, roundTarget=매우 큰 수 → 항상 실패
     useGameStore.setState({ maxSpinsInRound: 1, roundTarget: 9_999_999 })
     useGameStore.getState().spin()
+    finishSpin()
     expect(useGameStore.getState().phase).toBe('game_over')
   })
 
   test('마지막 spin 전에는 idle 유지', () => {
     useGameStore.setState({ maxSpinsInRound: 3, spinsInRound: 0, roundTarget: -9999 })
     useGameStore.getState().spin()
+    finishSpin()
     expect(useGameStore.getState().phase).toBe('idle')
     useGameStore.getState().spin()
+    finishSpin()
     expect(useGameStore.getState().phase).toBe('idle')
   })
 })
@@ -96,6 +107,7 @@ describe('selectItem()', () => {
   function toRoundClear() {
     useGameStore.setState({ maxSpinsInRound: 1, roundTarget: -9999 })
     useGameStore.getState().spin()
+    finishSpin()
   }
 
   test('증강체 선택 후 phase가 idle로 전환', () => {
