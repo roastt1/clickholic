@@ -123,6 +123,11 @@ if (!supabaseUrl) throw new Error("NEXT_PUBLIC_SUPABASE_URL is not set");
 
 ## Git 워크플로우 (CRITICAL)
 
+> **브랜치 전략 (절대 규칙)**
+> - feature/fix 브랜치 → **`dev`** (PR `--base dev` 필수)
+> - `dev` → `main` 은 배포 시에만
+> - `main`에 직접 PR 금지. `--base` 생략 시 자동으로 `dev`가 선택됨 (GitHub 기본 브랜치 = `dev`)
+
 새 기능 또는 버그 수정 시 반드시 아래 순서를 따른다.
 
 ### 1단계: Issue 생성
@@ -182,6 +187,7 @@ gh pr create \
 ```
 
 - PR body에 반드시 `Close #{issue-number}` 포함 (PR merge 시 Issue 자동 닫힘)
+- **`--base dev` 반드시 명시** — 생략하면 안 됨 (GitHub 기본 브랜치가 `dev`이므로 생략해도 `dev`로 가지만, 명시적으로 작성)
 - **feature/fix 브랜치 → `dev`** PR을 통해 merge
 - **`dev` → `main`** 은 배포 시에만 (릴리즈 PR)
 - `main`, `dev` 브랜치에 직접 push 금지
