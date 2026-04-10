@@ -34,6 +34,7 @@ const INITIAL_STATE: GameState = {
   spinsInRound:       0,
   maxSpinsInRound:    getSpinsInRound(),
   deck:               [],
+  luck:               0,
   activeEffects:      [],
   currentGrid:        null,
   spinHistory:        [],
@@ -62,14 +63,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const {
       phase, activeEffects, spinHistory, score,
       roundScore, spinsInRound, maxSpinsInRound, roundTarget,
-      spinId,
+      spinId, luck,
     } = get()
 
     if (phase !== 'idle') return
 
     set({ phase: 'spinning' })
 
-    const result           = executeSpin(SYMBOL_POOL, activeEffects)
+    const result           = executeSpin(SYMBOL_POOL, activeEffects, luck)
     const remainingEffects = tickEffects(activeEffects)
     const newRoundScore    = roundScore + result.score
     const newScore         = score + result.score

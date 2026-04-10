@@ -14,7 +14,7 @@ import { PatternReveal } from "./PatternReveal";
 export function GameScreen() {
     const {
         phase, score, roundScore, roundTarget,
-        spinsInRound, maxSpinsInRound, round,
+        spinsInRound, maxSpinsInRound, round, luck,
         currentGrid, revealIndex, resetGame,
         volume, setVolume,
         handleSpin, handleReelStop, handleSelectItem,
@@ -54,6 +54,7 @@ export function GameScreen() {
                     spinsInRound={spinsInRound}
                     maxSpinsInRound={maxSpinsInRound}
                     round={round}
+                    luck={luck}
                 />
 
                 {/* ── Slot grid + Pattern reveal overlay ────────── */}

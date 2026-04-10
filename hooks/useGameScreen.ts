@@ -21,6 +21,7 @@ export function useGameScreen() {
     const startReveal = useGameStore((s) => s.startReveal);
     const advanceReveal = useGameStore((s) => s.advanceReveal);
     const selectItem = useGameStore((s) => s.selectItem);
+    const luck = useGameStore((s) => s.luck);
     const resetGame = useGameStore((s) => s.resetGame);
 
     const [volume, setVolume] = useState(0.8);
@@ -91,6 +92,7 @@ export function useGameScreen() {
         spinsInRound,
         maxSpinsInRound,
         round,
+        luck,
         currentGrid,
         revealIndex,
         resetGame,
