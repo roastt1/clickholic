@@ -13,9 +13,10 @@ interface ScoreBoardProps {
     spinsInRound: number;
     maxSpinsInRound: number;
     round: number;
+    luck: number;
 }
 
-export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, round }: ScoreBoardProps) {
+export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, round, luck }: ScoreBoardProps) {
     const spinId = useGameStore((s) => s.spinId);
     const scoreGain = useGameStore((s) => s.scoreGain);
     const phase = useGameStore((s) => s.phase);
@@ -132,8 +133,24 @@ export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, 
                     </div>
                 </div>
 
-                {/* 우측: 라운드 번호 + 스핀 잔여 */}
+                {/* 우측: 라운드 번호 + 스핀 잔여 + 행운 */}
                 <div className="flex gap-4 text-right">
+                    {luck > 0 && (
+                        <div className="flex flex-col gap-0.5 items-end">
+                            <span
+                                className="text-[10px] tracking-[0.25em] uppercase"
+                                style={{ color: "var(--text-muted)" }}
+                            >
+                                Luck
+                            </span>
+                            <span
+                                className="text-lg font-bold tabular-nums"
+                                style={{ color: "var(--neon-green)", textShadow: "0 0 8px var(--neon-green)" }}
+                            >
+                                +{luck}
+                            </span>
+                        </div>
+                    )}
                     <div className="flex flex-col gap-0.5 items-end">
                         <span
                             className="text-[10px] tracking-[0.25em] uppercase"

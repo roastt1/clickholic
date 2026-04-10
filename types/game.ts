@@ -38,6 +38,7 @@ export interface GameState {
   spinsInRound: number    // 현재 라운드 사용한 스핀 수
   maxSpinsInRound: number // 현재 라운드 최대 스핀 수 (고정)
   deck: ItemCard[]        // 획득한 증강체 목록
+  luck: number            // 행운 스탯 (0 이상 정수, 높을수록 슬롯 클러스터링 확률 증가)
   activeEffects: Effect[]
   currentGrid: SlotSymbol[][] | null
   spinHistory: SpinResult[]
