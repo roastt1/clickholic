@@ -99,6 +99,60 @@ describe('generateGrid', () => {
   })
 })
 
+describe('luck 클러스터링', () => {
+  const pool = [makeSymbol('cherry', 1.0), makeSymbol('clover', 1.0)]
+
+  // 그리드에서 가장 많이 등장한 심볼 개수 반환
+  function maxSymbolCount(grid: ReturnType<typeof generateGrid>): number {
+    const counts: Record<string, number> = {}
+    grid.flat().forEach((s) => { counts[s.type] = (counts[s.type] ?? 0) + 1 })
+    return Math.max(...Object.values(counts))
+  }
+
+  // n회 시행 평균 maxSymbolCount
+  function avgMaxCount(luck: number, trials = 400): number {
+    let sum = 0
+    for (let i = 0; i < trials; i++) sum += maxSymbolCount(generateGrid(pool, [], luck))
+    return sum / trials
+  }
+
+  test('luck=0: clusterChance 항상 0 → 기존 동작 유지 (평균 최빈 심볼 10개 미만)', () => {
+    // 등가중치 2심볼, 15셀 → 기대 최빈 ~9
+    expect(avgMaxCount(0)).toBeLessThan(10)
+  })
+
+  test('luck=50: 최빈 심볼 빈도가 luck=0보다 유의미하게 높음 (클러스터링 체감)', () => {
+    const avg0  = avgMaxCount(0)
+    const avg50 = avgMaxCount(50)
+    // luck=50이면 클러스터링으로 최빈 심볼 평균 빈도가 1.5개 이상 증가해야 함
+    expect(avg50).toBeGreaterThan(avg0 + 1.5)
+  })
+
+  test('luck 파라미터 생략 시 기본값 0으로 정상 동작', () => {
+    expect(() => generateGrid(pool, [])).not.toThrow()
+    const grid = generateGrid(pool, [])
+    expect(grid).toHaveLength(ROWS)
+    grid.forEach((row) => expect(row).toHaveLength(COLS))
+  })
+
+  test('luck=100: clusterChance 상한 0.5 준수 → 전체 동일 그리드는 드물어야 함', () => {
+    let allSameCount = 0
+    const TRIALS = 300
+    for (let i = 0; i < TRIALS; i++) {
+      if (maxSymbolCount(generateGrid(pool, [], 100)) === 15) allSameCount++
+    }
+    // 상한 75% 제약으로 인해 15셀 전부 동일은 30% 미만이어야 함
+    expect(allSameCount / TRIALS).toBeLessThan(0.3)
+  })
+
+  test('executeSpin luck 파라미터 전달 → score 정상 계산', () => {
+    const singlePool = [makeSymbol('cherry')]
+    const result = executeSpin(singlePool, [], 10)
+    expect(result.score).toBeGreaterThanOrEqual(0)
+    expect(result.symbols).toHaveLength(ROWS)
+  })
+})
+
 describe('executeSpin', () => {
   test('SpinResult의 symbols가 3×5', () => {
     const result = executeSpin(symbolPool, [])
