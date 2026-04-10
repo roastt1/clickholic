@@ -41,22 +41,27 @@ describe('CardPanel', () => {
     expect(screen.getByText('Round Clear!')).toBeInTheDocument()
   })
 
+  // "화면 보기" 토글 버튼(aria-label 있음)을 제외한 카드 버튼만 반환
+  function getCardButtons() {
+    return screen.getAllByRole('button').filter((b) => !b.hasAttribute('aria-label'))
+  }
+
   test('visible=true 이면 증강체 버튼 3개 렌더링', () => {
     render(<CardPanel visible={true} onSelect={jest.fn()} roundScore={1200} roundTarget={1000} />)
-    expect(screen.getAllByRole('button')).toHaveLength(3)
+    expect(getCardButtons()).toHaveLength(3)
   })
 
   test('증강체 클릭 시 onSelect 1회 호출', () => {
     const onSelect = jest.fn()
     render(<CardPanel visible={true} onSelect={onSelect} roundScore={1200} roundTarget={1000} />)
-    fireEvent.click(screen.getAllByRole('button')[0])
+    fireEvent.click(getCardButtons()[0])
     expect(onSelect).toHaveBeenCalledTimes(1)
   })
 
   test('onSelect에 id를 가진 카드 객체 전달', () => {
     const onSelect = jest.fn()
     render(<CardPanel visible={true} onSelect={onSelect} roundScore={1200} roundTarget={1000} />)
-    fireEvent.click(screen.getAllByRole('button')[0])
+    fireEvent.click(getCardButtons()[0])
     expect(onSelect).toHaveBeenCalledWith(
       expect.objectContaining({ id: expect.any(String) }),
     )
@@ -67,6 +72,6 @@ describe('CardPanel', () => {
     expect(screen.queryAllByRole('button')).toHaveLength(0)
 
     rerender(<CardPanel visible={true} onSelect={jest.fn()} roundScore={1200} roundTarget={1000} />)
-    expect(screen.getAllByRole('button')).toHaveLength(3)
+    expect(getCardButtons()).toHaveLength(3)
   })
 })
