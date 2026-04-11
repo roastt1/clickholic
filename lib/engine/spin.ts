@@ -14,9 +14,13 @@ function buildWeightedPool(symbolPool: SlotSymbol[], effects: Effect[]): SlotSym
     const weighted: SlotSymbol[] = [];
 
     for (const symbol of symbolPool) {
-        const bonus = rateEffects.filter((e) => e.targetSymbol === symbol.type).reduce((acc, e) => acc + e.value, 0);
+        const symbolEffects = rateEffects.filter((e) => e.targetSymbol === symbol.type);
 
-        const weight = (symbol.weight ?? 1) + bonus;
+        let weight = symbol.weight ?? 1;
+        for (const effect of symbolEffects) {
+            if (effect.value <= -1) { weight = 0; break; } // -1 → 완전 제거 (skull-purge)
+            weight *= effect.value;                         // 양수 → 배수 적용
+        }
         if (weight <= 0) continue; // 확률 0 이하 → 풀에서 제거
 
         // 가중치를 소수점 첫째 자리 단위로 반올림 후 정수 개수로 변환
