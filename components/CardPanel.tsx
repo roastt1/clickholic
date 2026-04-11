@@ -4,14 +4,16 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import type { ItemCard } from '@/types/card'
+import { TIER_LABELS } from '@/types/card'
 
 const RARITY_NEON: Record<ItemCard['rarity'], string> = {
-  common:    '#4a5080',
-  uncommon:  '#00ff88',
-  rare:      '#00e5ff',
-  epic:      '#bf5fff',
-  legendary: '#ffd700',
+  silver: '#c0c8d8',
+  gold:   '#ffd700',
+  prism:  '#e879f9',
 }
+
+// 프리즘 등급 배경 그라디언트
+const PRISM_GRADIENT = 'linear-gradient(135deg, #e879f922 0%, #818cf822 50%, #34d39922 100%)'
 
 interface CardPanelProps {
   visible:     boolean
@@ -68,17 +70,41 @@ export function CardPanel({ visible, onSelect, roundScore, roundTarget }: CardPa
                   </p>
                 </motion.div>
 
+                {/* ── Tier Badge ──────────────────────────────── */}
+                {offeredItems.length > 0 && (() => {
+                  const tier = offeredItems[0].rarity
+                  const neon = RARITY_NEON[tier]
+                  return (
+                    <motion.div
+                      className="mb-4 px-5 py-1.5 rounded-full text-[11px] font-bold tracking-[0.25em] uppercase"
+                      style={{
+                        color:      neon,
+                        border:     `1px solid ${neon}66`,
+                        boxShadow:  `0 0 18px ${neon}33`,
+                        fontFamily: 'var(--font-orbitron)',
+                        background: tier === 'prism' ? PRISM_GRADIENT : `${neon}11`,
+                      }}
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 20 }}
+                    >
+                      {TIER_LABELS[tier]}
+                    </motion.div>
+                  )
+                })()}
+
                 {/* ── Cards ───────────────────────────────────── */}
                 <div className="flex gap-4 px-4 w-full max-w-3xl justify-center">
                   {offeredItems.map((card, i) => {
                     const neon = RARITY_NEON[card.rarity]
+                    const isPrism = card.rarity === 'prism'
                     return (
                       <motion.button
                         key={card.id}
                         onClick={() => onSelect(card)}
                         className="flex flex-col items-start gap-3 flex-1 max-w-[200px] min-h-[220px] px-4 py-5 rounded-2xl text-left cursor-pointer"
                         style={{
-                          background: 'var(--bg-card)',
+                          background: isPrism ? PRISM_GRADIENT : 'var(--bg-card)',
                           border:     `1px solid ${neon}66`,
                           boxShadow:  `0 0 20px ${neon}22`,
                         }}
@@ -96,7 +122,7 @@ export function CardPanel({ visible, onSelect, roundScore, roundTarget }: CardPa
                           className="text-[10px] font-bold tracking-[0.2em] uppercase"
                           style={{ color: neon, fontFamily: 'var(--font-orbitron)' }}
                         >
-                          {card.rarity}
+                          {TIER_LABELS[card.rarity]}
                         </span>
                         <span
                           className="text-sm font-bold leading-tight"
