@@ -4,13 +4,12 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/store/gameStore'
 import type { ItemCard } from '@/types/card'
+import { TIER_LABELS } from '@/types/card'
 
 const RARITY_NEON: Record<ItemCard['rarity'], string> = {
-  common:    '#4a5080',
-  uncommon:  '#00ff88',
-  rare:      '#00e5ff',
-  epic:      '#bf5fff',
-  legendary: '#ffd700',
+  silver: '#c0c8d8',
+  gold:   '#ffd700',
+  prism:  '#e879f9',
 }
 
 export function AugmentVault() {
@@ -116,7 +115,7 @@ export function AugmentVault() {
                               className="text-[9px] font-bold tracking-[0.2em] uppercase"
                               style={{ color: neon, fontFamily: 'var(--font-orbitron)' }}
                             >
-                              {card.rarity}
+                              {TIER_LABELS[card.rarity]}
                             </span>
                           </div>
                           <span
