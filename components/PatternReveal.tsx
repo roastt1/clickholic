@@ -49,7 +49,7 @@ export function PatternReveal({ pattern, revealIndex }: PatternRevealProps) {
                             textShadow: "0 0 24px rgba(251,191,36,0.9), 0 0 48px rgba(251,191,36,0.5)",
                         }}
                     >
-                        +{pattern.score.toLocaleString()}
+                        +{Math.floor(pattern.score).toLocaleString()}
                     </motion.span>
                 </motion.div>
             )}

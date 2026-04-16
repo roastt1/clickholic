@@ -27,10 +27,18 @@ export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, 
     const [displayScore, setDisplayScore] = useState(score);
     const [flashGain, setFlashGain] = useState(0);
     const [flashBonus, setFlashBonus] = useState(false);
+    const [flashKey, setFlashKey] = useState(0);
 
     const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const bonusHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    function triggerFlash(gain: number) {
+        setFlashGain(gain);
+        setFlashKey((k) => k + 1);
+        if (hideTimer.current) clearTimeout(hideTimer.current);
+        hideTimer.current = setTimeout(() => setFlashGain(0), 1800);
+    }
 
     // 스핀 시작: displayScore를 스핀 전 값으로 고정, 패턴 없으면 SCORE_REVEAL_DELAY 후 일괄 업데이트
     useEffect(() => {
@@ -53,10 +61,7 @@ export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, 
         // 패턴 없는 스핀: 릴 정지 후 일괄 업데이트
         revealTimer.current = setTimeout(() => {
             setDisplayScore(score);
-            if (scoreGain > 0) {
-                setFlashGain(scoreGain);
-                hideTimer.current = setTimeout(() => setFlashGain(0), 1600);
-            }
+            if (scoreGain > 0) triggerFlash(scoreGain);
         }, SCORE_REVEAL_DELAY);
 
         return () => {
@@ -73,11 +78,8 @@ export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, 
         const pattern = patternBreakdowns[revealIndex];
         if (!pattern) return;
 
-        if (hideTimer.current) clearTimeout(hideTimer.current);
-
         setDisplayScore((prev) => prev + pattern.score);
-        setFlashGain(pattern.score);
-        hideTimer.current = setTimeout(() => setFlashGain(0), 1600);
+        triggerFlash(pattern.score);
 
         return () => {
             if (hideTimer.current) clearTimeout(hideTimer.current);
@@ -114,39 +116,44 @@ export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, 
                         Score
                     </span>
                     <div className="flex items-baseline gap-2">
-                        <AnimatePresence mode="wait">
-                            <motion.span
-                                key={displayScore}
-                                className="text-2xl sm:text-3xl font-bold tabular-nums neon-cyan"
-                                initial={{ y: -10, opacity: 0, scale: 0.92 }}
-                                animate={{ y: 0, opacity: 1, scale: 1 }}
-                                transition={{ type: "spring", stiffness: 360, damping: 22 }}
-                            >
-                                {displayScore.toLocaleString()}
-                            </motion.span>
-                        </AnimatePresence>
+                        {/* 현재 점수 + 플래시 기준 컨테이너 */}
+                        <div className="relative">
+                            <AnimatePresence mode="wait">
+                                <motion.span
+                                    key={Math.floor(displayScore)}
+                                    className="text-2xl sm:text-3xl font-bold tabular-nums neon-cyan"
+                                    initial={{ y: -10, opacity: 0, scale: 0.92 }}
+                                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                                    transition={{ type: "spring", stiffness: 360, damping: 22 }}
+                                >
+                                    {Math.floor(displayScore).toLocaleString()}
+                                </motion.span>
+                            </AnimatePresence>
+                            {/* +N 플래시: 현재 점수 오른쪽 위에서 떠오르며 사라짐 */}
+                            {flashGain > 0 && (
+                                <motion.span
+                                    key={flashKey}
+                                    className="absolute pointer-events-none whitespace-nowrap tabular-nums"
+                                    style={{
+                                        top: "-0.25rem",
+                                        left: "100%",
+                                        paddingLeft: "0.3rem",
+                                        color: "var(--neon-green)",
+                                        fontSize: "0.8rem",
+                                        fontWeight: 700,
+                                        textShadow: "0 0 10px var(--neon-green)",
+                                    }}
+                                    initial={{ opacity: 1, y: 0 }}
+                                    animate={{ opacity: 0, y: -22 }}
+                                    transition={{ duration: 1.5, ease: "easeOut" }}
+                                >
+                                    +{Math.floor(flashGain).toLocaleString()}
+                                </motion.span>
+                            )}
+                        </div>
                         <span style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
                             / {roundTarget.toLocaleString()}
                         </span>
-                        {/* +N 플래시 */}
-                        <AnimatePresence>
-                            {flashGain > 0 && (
-                                <motion.span
-                                    initial={{ opacity: 0, y: 6 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.1 }}
-                                    style={{
-                                        color: "var(--neon-green)",
-                                        fontSize: "0.85rem",
-                                        fontWeight: 700,
-                                        textShadow: "0 0 8px var(--neon-green)",
-                                    }}
-                                >
-                                    +{flashGain.toLocaleString()}
-                                </motion.span>
-                            )}
-                        </AnimatePresence>
                     </div>
                 </div>
 

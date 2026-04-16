@@ -104,12 +104,19 @@ export function calculateScore(
 ): ScoreBreakdown {
   const { total: groupScore, breakdowns } = calculateGroupScore(grid, effects)
 
-  // score_multiply는 순차 곱셈, effectBonus는 없음 (라운드 기반에서 score_add 제거)
-  const multipliedTotal = effects
+  // score_multiply는 순차 곱셈
+  const scoreMultiplier = effects
     .filter((e) => e.type === 'score_multiply')
-    .reduce((acc, e) => acc * e.value, groupScore)
+    .reduce((acc, e) => acc * e.value, 1)
 
-  const total = Math.floor(multipliedTotal)
+  // 패턴별 점수에 배수 반영 (소수점 유지 — floor는 UI 표시 시점에만)
+  const scaledBreakdowns = breakdowns.map((b) => ({
+    ...b,
+    score: b.score * scoreMultiplier,
+  }))
+
+  // total도 소수점 유지: 누적 시 반올림 손실 방지
+  const total = groupScore * scoreMultiplier
 
   const patternFlags = {
     hasFullHouse: breakdowns.some((b) => b.type === 'fullhouse'),
@@ -117,5 +124,5 @@ export function calculateScore(
     lineCount:    breakdowns.filter((b) => b.type === 'line').length,
   }
 
-  return { groupScore, effectBonus: 0, total, patternFlags, patternBreakdowns: breakdowns }
+  return { groupScore, effectBonus: 0, total, patternFlags, patternBreakdowns: scaledBreakdowns }
 }
