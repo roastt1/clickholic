@@ -10,6 +10,7 @@ import { AugmentVault } from "./AugmentVault";
 import { VolumeControl } from "./VolumeControl";
 import { SymbolOddsPanel } from "./SymbolOddsPanel";
 import { PatternReveal } from "./PatternReveal";
+import { BonusSpinBanner } from "./BonusSpinBanner";
 
 export function GameScreen() {
     const {
@@ -56,6 +57,9 @@ export function GameScreen() {
                     round={round}
                     luck={luck}
                 />
+
+                {/* ── Bonus spin banner ─────────────────────────── */}
+                <BonusSpinBanner />
 
                 {/* ── Slot grid + Pattern reveal overlay ────────── */}
                 <div className="relative">

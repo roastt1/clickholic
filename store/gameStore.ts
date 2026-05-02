@@ -14,9 +14,9 @@ export const REEL_FAKE_COUNT = 22;
 
 function pickTier(): CardRarity {
     const roll = Math.random();
-    if (roll < 0.40) return 'silver';
-    if (roll < 0.80) return 'gold';
-    return 'prism';
+    if (roll < 0.4) return "silver";
+    if (roll < 0.8) return "gold";
+    return "prism";
 }
 
 function pickOfferedItems(deck: ItemCard[]): ItemCard[] {
@@ -26,9 +26,7 @@ function pickOfferedItems(deck: ItemCard[]): ItemCard[] {
     const tier = pickTier();
     const pool = TIER_POOLS[tier];
 
-    const nonRepeatable = pool.filter(
-        (c) => !c.repeatable && !ownedIds.has(c.id) && !(c.set && ownedSets.has(c.set))
-    );
+    const nonRepeatable = pool.filter((c) => !c.repeatable && !ownedIds.has(c.id) && !(c.set && ownedSets.has(c.set)));
 
     // 비반복 카드가 3장 이상이면 그 중에서만 제시
     if (nonRepeatable.length >= 3) {
@@ -67,6 +65,7 @@ const INITIAL_STATE: GameState = {
     round: 1,
     offeredItems: [],
     spinId: 0,
+    bonusSpinId: 0,
     spinStrips: null,
     scoreGain: 0,
     patternBreakdowns: [],
@@ -96,6 +95,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
             maxSpinsInRound,
             roundTarget,
             spinId,
+            bonusSpinId,
             luck,
             extraSpinChance,
             deck,
@@ -132,6 +132,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
             maxSpinsInRound: newMaxSpins,
             offeredItems: pendingPhase === "round_clear" ? pickOfferedItems(deck) : [],
             spinId: spinId + 1,
+            bonusSpinId: bonusSpin > 0 ? bonusSpinId + 1 : bonusSpinId,
             spinStrips: makeSpinStrips(),
             scoreGain: result.score,
             patternBreakdowns: result.patternBreakdowns,

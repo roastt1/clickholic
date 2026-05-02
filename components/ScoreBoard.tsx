@@ -18,6 +18,7 @@ interface ScoreBoardProps {
 
 export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, round, luck }: ScoreBoardProps) {
     const spinId = useGameStore((s) => s.spinId);
+    const bonusSpinId = useGameStore((s) => s.bonusSpinId);
     const scoreGain = useGameStore((s) => s.scoreGain);
     const phase = useGameStore((s) => s.phase);
     const patternBreakdowns = useGameStore((s) => s.patternBreakdowns);
@@ -25,9 +26,11 @@ export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, 
 
     const [displayScore, setDisplayScore] = useState(score);
     const [flashGain, setFlashGain] = useState(0);
+    const [flashBonus, setFlashBonus] = useState(false);
 
     const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const bonusHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // 스핀 시작: displayScore를 스핀 전 값으로 고정, 패턴 없으면 SCORE_REVEAL_DELAY 후 일괄 업데이트
     useEffect(() => {
@@ -81,6 +84,20 @@ export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, 
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [phase, revealIndex]);
+
+    // 보너스 스핀 발동 즉시 골드 하이라이트
+    useEffect(() => {
+        if (bonusSpinId === 0) return;
+
+        if (bonusHideTimer.current) clearTimeout(bonusHideTimer.current);
+
+        setFlashBonus(true);
+        bonusHideTimer.current = setTimeout(() => setFlashBonus(false), 1600);
+
+        return () => {
+            if (bonusHideTimer.current) clearTimeout(bonusHideTimer.current);
+        };
+    }, [bonusSpinId]);
 
     const progressPct = Math.min(100, Math.floor((displayScore / roundTarget) * 100));
     const spinsLeft = maxSpinsInRound - spinsInRound;
@@ -158,12 +175,22 @@ export function ScoreBoard({ score, roundTarget, spinsInRound, maxSpinsInRound, 
                         >
                             Spins
                         </span>
-                        <span
+                        <motion.span
                             className="text-lg font-bold tabular-nums"
-                            style={{ color: spinsLeft <= 2 ? "var(--neon-pink)" : "var(--text-primary)" }}
+                            animate={flashBonus ? { scale: [1, 1.3, 1] } : {}}
+                            transition={{ duration: 0.35, ease: "easeOut" }}
+                            style={{
+                                color: flashBonus
+                                    ? "var(--neon-gold)"
+                                    : spinsLeft <= 2
+                                      ? "var(--neon-pink)"
+                                      : "var(--text-primary)",
+                                textShadow: flashBonus ? "0 0 12px var(--neon-gold)" : undefined,
+                                transition: "color 0.2s, text-shadow 0.2s",
+                            }}
                         >
                             {spinsLeft}
-                        </span>
+                        </motion.span>
                     </div>
                     <div className="flex flex-col gap-0.5 items-end">
                         <span
