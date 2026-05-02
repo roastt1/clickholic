@@ -46,6 +46,7 @@ export interface GameState {
   round: number
   offeredItems: ItemCard[]  // round_clear 페이즈에서 제시되는 증강체 3개
   spinId: number            // 스핀마다 증가 — 릴 애니메이션 트리거용
+  bonusSpinId: number       // 보너스 스핀 발동마다 증가 — 알림 트리거용
   spinStrips: SlotSymbol[][] | null
   scoreGain: number         // 마지막 스핀에서 얻은 점수 (점수 플래시용)
   patternBreakdowns: PatternBreakdown[]
